@@ -1,0 +1,56 @@
+//    /\*[^*]*\*+(?:[^*/][^*]*\*+)*/ : matches to /* ... */ commnet blocks
+section 404  //EBA liquid assets
+	< section 404-1
+	-!section 404-2
+	- section 404-3
+
+section 404-1
+	< section 404-1a     
+	| section 404-1b
+	| section 404-1c
+	| section 404-1d
+
+section 404-1a
+	< cash?
+	| central bank deposits?
+
+section 404-1b
+	< transferable asset?
+	- instrument liquidity = 'exteremly high'
+	- instrument credit quality = 'exteremly high'
+
+section 404-1c
+	< transferable asset?
+	- issuer industry sector = 'central governement'
+	- issuer region = 'EU'
+
+section 404-1c   //  allowing repeats is an implied ||
+	< transferable asset?
+	- guarantor industry sector = 'central government'
+	- guarantor region = 'EU'
+
+section 404-1c
+	< transferable asset?
+	- issuer industry sector = 'central government'
+	- issuer region != 'EU'
+	- takes liquidity risk here?
+
+section 404-1c
+	< transferable asset?
+	- guarantor industry sector = 'central government'
+	- guarantor region != 'EU'
+	- takes liquidity risk here?
+
+section 404-1d
+	< transferable asset?
+	- instrument liquidity = 'high'
+	- instrument credit quality = 'high'
+
+section 404-2-exemption
+	< issuer industry sector = 'credit institution'
+	- 
+		| section 404-2a(i)                                 
+
+section 404-2a(i)                                 
+	< section 124-3
+	| section 124-4

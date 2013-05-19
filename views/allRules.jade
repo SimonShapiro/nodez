@@ -1,0 +1,32 @@
+html
+	h1 Processing rules list
+	
+	p Found #{data.total_rows} rules
+	p
+	p 
+	div
+		table(border='1')
+			tbody
+			- i = 0
+				thead
+					tr 
+						td
+						td 
+							b Conclusion
+						td 
+							b Description
+						td 
+							b Reference
+				each row in data.rows 
+					- i = i + 1
+					tr 
+						td
+							a(href= '../rule/#{row.id}') view
+							= "|"
+							a(href= '../couch/rules/#{row.id}') edit
+						td  
+							| #{row.key[0]} #{row.key[1]} #{row.key[2]} 
+						td 
+							| #{row.value}	
+						td
+							a(href= '../rule/#{row.id}') #{row.id}

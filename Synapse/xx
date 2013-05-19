@@ -1,0 +1,23 @@
+Inside with:RULEID>this is rule one
+	= CONCLUSION
+0
+found
+this is rule one
+
+wrapping
+Inside with:TAB_1>	= CONCLUSION
+0
+found
+	
+Inside with:EQ>= CONCLUSION
+0
+found
+= 
+Inside with:EQ_LINE>CONCLUSION
+0
+found
+CONCLUSION
+
+wrapping
+Inside with:FIN>-1
+_RB['this is rule one']=_V(CONCLUSION)

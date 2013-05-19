@@ -1,0 +1,54 @@
+<!DOCTYPE text/html>
+<head>
+	<script>
+	</script>
+	<script src="json2tree.js">
+	</script>
+</head>
+<html >
+	<title>json editor 0.0</title>
+	<script>
+//			alert('setup finished')
+//			var js={"_ref value":""}
+		
+		js = { 
+		    Name:"Simon Shapiro",
+		    Phones:[07852469663,02084204729,07780757238],
+		    Address: {Street:"8 Woburn Close",
+		    		PostalCode:"WD234XA"},
+		    Alist:{one:1,two:{me:"simon",too:2},three:3}
+		}
+/*
+js = {
+	foo:'bar',
+	one:{two:2}
+}
+*/
+var tr=new jsNode("root",{})
+js2Tree(tr,js)
+tr.setVisibility(false,true)
+/*
+var j={}
+tree2JS(tr,j)
+alert(JSON.stringify(j))
+alert(JSON.stringify(j)==JSON.stringify(js))
+alert("walking")
+//treeWalker(tr,showNode,".child[0]")
+*/
+		</script>
+	<body>
+		<div id="message"></div>
+		<button onclick=switch2Edit()>Edit JSON</button><br/>
+		<div id="jsBuild">
+		</div>
+		<hr/>
+		<div id="jsFormDiv">
+			<table id="jsForm">
+			</table>
+		</div>
+		<hr/>
+			<script>
+				treeWalker(tr,buildForm,"0","normal")
+			</script>
+	</body>
+</html>

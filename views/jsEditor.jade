@@ -1,0 +1,58 @@
+script(type="text/javascript" src="/javascripts/JSEditor/json2tree.js")
+script(type="text/javascript" src="/javascripts/jQuery-copy/jquery-1.9.0-min.js")
+script(type="text/javascript")
+	js={simon:1,mark:2}
+	var tr=new jsNode('root',{})
+	js2Tree(tr,js)
+	tr.setVisibility(false,true)
+	alert(tr.name)
+html
+	body
+		h1 jsEditor #{js.simon}
+		button(onclick='switch2Edit()') Edit Template as JSON
+		button(onclick='extractTemplate()') Extract Template
+		div(id="jsBuild")
+		div(id="message")
+		hr
+		div(id="jsFormDiv")
+			table(id="jsForm")
+			button(onClick='saveForm()') Save
+			button(onClick='saveFormAs()') Save As :_id
+			button(onClick='resetForm()') Cancel
+		hr
+script(type="text/javascript")
+	treeWalker(tr,buildForm,"0","normal")
+	
+	
+======================================================
+
+
+		button(onclick='switch2Edit()') Edit Template as JSON
+		button(onclick='extractTemplate()') Extract Template
+		div(id="jsBuild")
+		div(id="message")
+		hr
+		div(id="jsFormDiv")
+			table(id="jsForm")
+			button(onClick='saveForm()') Save
+			button(onClick='saveFormAs()') Save As :_id
+			button(onClick='resetForm()') Cancel
+		hr
+script(type="text/javascript")
+
+=========================================================
+script
+
+			js={"simon":"mark")
+
+
+			tr=new jsNode('root',{})
+			js2Tree(tr,js)
+			tr.setVisibility(false,true)
+
+			treeWalker(tr,buildForm,"0","normal")
+
+			tr=new jsNode('root',{})
+			js2Tree(tr,js)
+			tr.setVisibility(false,true)
+	

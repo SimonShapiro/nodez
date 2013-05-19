@@ -1,0 +1,35 @@
+	<body>
+		<button onclick=switch2Edit()>Edit Template as JSON</button><br/>
+		<button onclick=extractTemplate()>Extract Template</button><br/>
+		<div id="jsBuild">
+		</div>
+		<div id="message"></div>
+		<hr/>
+		<div id="jsFormDiv">
+			<table id="jsForm">
+			</table>
+			<button onClick=saveForm()>Save</button>
+			<button onClick=resetForm()>Cancel</button>
+		</div>
+		<hr/>
+			<script>
+/*
+ * Code to set-up controls that cannot be discovered from json structures
+ * 
+ * Need to find a way for the client to remember these settings - put them in a json structure without needing nd.
+ 				nd=jsFromPath(("root.Alias.0.Context"),tr)
+				if (nd) {
+					msg("attaching function 1")
+					nd.jsForm=function () {alert("hi barbs, jsFormatter")}  //looses it on save!
+				}
+*/			
+				nd=jsFromPath(("root.DataSubjectArea"),tr)
+				if (nd) {
+					msg("attaching function 2")
+//					nd.datatype="[object Array]"  //neat deivce but it destroys data -> rather do this through a type override function
+					nd.feature={type:"checkboxes",parameter:{options:["a","b","c"]}}
+				}
+				
+				treeWalker(tr,buildForm,"0","normal")
+			</script>
+	</body>
