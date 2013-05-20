@@ -226,7 +226,29 @@ exports.analyseRule = function (req,res) {
 	})
 }
 
-
+exports.newRuleBasedOnWhenItem = function(req,res) {
+	console.log(req.params.item+":"+req.params.operator+":"+req.params.value)
+	var id=req.params.item+" "+req.params.operator+" "+req.params.value
+	var json = {
+		_id: id,
+		_rev: "",
+		description:"New rule setting out the conclusion "+id,
+		conclude: {
+			kItem:req.params.item,
+			kOperator:req.params.operator,
+			kValue:req.params.value
+		},
+		when: [
+			{
+				kLogic:"WHEN",
+				kItem:"x",
+				kOperator:"is",
+				kValue:"true"
+			}
+		]
+	}
+	res.render('editNewRuleBasedOnWhen.jade',data={header:"New rule for "+id,json:JSON.stringify(json)})
+}
 
 exports.displayRule = function (req,res) {
 /*

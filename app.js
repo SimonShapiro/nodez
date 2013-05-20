@@ -61,6 +61,7 @@ app.del('/couch/:docbase/:doc', couch.deleteDoc)   // D
 app.get('/rule/:id', rules.displayRule)
 app.get('/rules', rules.listAll)
 app.get('/rule/analyse/:id', rules.analyseRule)
+app.get('/rule/newBasedOnWhenItem/:item/:operator/:value', rules.newRuleBasedOnWhenItem)
 
 app.get('/test', test.index)
 //app.get('/rules/:matchingTarget', rules.listAll)

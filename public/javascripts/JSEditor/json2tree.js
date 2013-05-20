@@ -581,6 +581,32 @@ function saveFormAs() {
 
 }
 
+function saveNewRule(rb) {
+//	msg("save clicked")
+	var jsBefore=JSON.stringify(js)  //A trick for getting a deep copy?
+//	alert(jsBefore)
+	tree2JS(tr,js)
+	delete(js["_rev"])
+	j=JSON.stringify(js)
+	request=$.ajax({
+		url:"/couch/"+rb,
+		type:"post",
+		data:{json:j},
+		success:function(data) {
+//			alert('page content: ' + JSON.stringify(data))
+			alert("Updated "+JSON.stringify(data["rev"]))
+			window.location.href=data["id"];
+		},
+		error:function(data) {
+			s=JSON.parse(data["responseText"])
+			alert("Failure "+JSON.stringify(s.reason))
+    		js=JSON.parse(jsBefore)
+			resetForm()  //consiider setting a paramter on reetForm to be resetForm with ...
+		}
+	});
+//	alert("back")
+}
+
 function deleteForm() {
 	tree2JS(tr,js)
 	j=JSON.stringify(js)
