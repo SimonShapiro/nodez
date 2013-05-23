@@ -200,10 +200,19 @@ exports.analyseRule = function (req,res) {
 			collector=[]
 			sum_col={}
 			collectLeafNodes(rulebase[req.params.id].lhs,rulebase,collector)
+			console.log("==============Going after duplicates=============")
 			for (r in collector) {
 				console.log('collector '+JSON.stringify(collector[r]))
 				if (sum_col[collector[r].kItem]) {  //test for duplicates
-					if (sum_col[collector[r].kItem].kDetails[0].kValue==collector[r].kValue) {
+					var found=false
+					for (var i=0;i<sum_col[collector[r].kItem].kDetails.length;i++) {
+						console.log("comparing: "+sum_col[collector[r].kItem].kDetails[i].kValue+" with "+collector[r].kValue+"==========>")
+						if (collector[r].kValue==sum_col[collector[r].kItem].kDetails[i].kValue) {
+							found=true
+							break //no need to continue looping
+						}
+					}
+					if(found) {
 						console.log("duplicate found")
 					}
 					else {
@@ -214,6 +223,7 @@ exports.analyseRule = function (req,res) {
 					sum_col[collector[r].kItem]={kItem:collector[r].kItem,kDetails:[{kOperator:collector[r].kOperator,kValue:collector[r].kValue}]}
 				}
 			}
+			console.log("++++++++++++++before render++++++++++++++")
 			for (r in sum_col) {
 				console.log(sum_col[r])
 			}
