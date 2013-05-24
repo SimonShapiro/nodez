@@ -18,6 +18,7 @@ html
 			|  #{clause.kOperator} #{clause.kValue} 
 		if (clause.kLink.type=='partial')
 			i  #{clause.kItem} #{clause.kOperator} #{clause.kValue}
+			button(onClick="location.href='newBasedOnWhenItem/#{clause.kItem}/#{clause.kOperator}/#{clause.kValue}'") *
 			a(href='#{clause.kLink.link}')  see also
 		br
 	br
