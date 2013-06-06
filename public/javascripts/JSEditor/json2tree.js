@@ -43,6 +43,99 @@ jsNode.prototype = {
 	},
 	toString: function() {
 		return "Tree Object:"+this.name
+	},
+	toEditor: function(id) {
+		var d=""
+		var level=eval("["+id.replace(/_/g,",")+"].length")
+		if (this.parent.datatype=="[object Array]") {
+			var ka=eval("["+id.replace(/_/g,",")+"]")
+			this.name=String(ka[ka.length-1])
+		}
+		if (this.feature) {
+			msg(this.name+" has feature of "+this.feature.type)
+			d="<tr>"  
+			d=d+"<td>";
+			d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
+			switch(this.feature.type)
+			{
+				case "invisible": {
+//							d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+value+"'>"+"</input>";
+					break
+				}
+				case "textarea": {
+					d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+this.feature.parameters.rows+"'>"+this.value+"</textarea>"
+					break
+				}
+				case "checkboxes": {
+					for (i in this.feature.parameter.options) {
+//								msg(o.feature.parameter.options[i])
+						d=d+"<input type='checkbox' class='jsForm_input' onchange='readForm()' id='"+id+"' value='"+this.feature.parameter.options[i]+"'>"+this.feature.parameter.options[i]+"</input></br>"
+					}
+					break
+				}
+				case "select": {
+					d=d+"<select class='jsForm_select' onChange='readForm()' id='"+id+"'>"
+					for (i in this.feature.parameters.selection) {
+						if (this.value==this.feature.parameters.selection[i]) {
+							var selctd=" SELECTED"
+						}
+						else {
+							var selctd=""
+						}
+						d=d+"<option value='"+this.feature.parameters.selection[i]+"'"+selctd+">"+this.feature.parameters.selection[i]+"</option>"
+					}
+					d=d+"</select>"
+					break							
+				}
+			}
+		}
+		else {
+			msg(this.name+" is naturale and is a "+this.datatype)
+			d="<tr>"  
+			if (this.type!="leaf") {
+				d=d+"<td>";
+				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
+				if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
+				}
+				if (this.datatype=="[object Array]") {
+					d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
+				}					
+				if (this.visible) {
+					d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,-1,false)'>-</button>"
+				}
+				else {
+					d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,1,false)'>+</button>"
+				}
+				d=d+"<b>  "+this.name+"</b>"
+				d=d+"</div>"
+				d=d+"</td>";
+			}
+			else {
+				d=d+"<td>";
+				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
+				if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
+				}
+				d=d+this.name;
+				d=d+"</div>"
+				d=d+"</td>";
+				d=d+"<td>";
+				d=d+"<div id='col2'>"
+				l=Math.round(this.value.length*1.5)
+	//			alert(l)
+				if(this.value.length>TEXTWIDTH) {
+					r=Math.round(this.value.length/TEXTWIDTH)+2
+	//				msg(value.length+":"+r)
+					d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+r+"'>"+this.value+"</textarea>"
+				}
+				else {
+					d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+this.value+"'>"+"</input>";
+				}
+			}
+		}
+	msg(d)
+	return "Editor oriented string"
 	}
 
 }
@@ -356,6 +449,8 @@ function buildForm(o,id,mode) {
 	if(o.jsForm) {
 		o.jsForm()
 	}
+// test o.toEditor()
+	o.toEditor(id)
 	if (o.parent.datatype=="[object Array]") {
 		ka=eval("["+id.replace(/_/g,",")+"]")
 		o.name=String(ka[ka.length-1])
@@ -424,6 +519,10 @@ function buildForm(o,id,mode) {
 				if(o.feature) {
 					switch(o.feature.type)
 					{
+						case "invisible": {
+//							d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+value+"'>"+"</input>";
+							break
+						}
 						case "textarea": {
 							d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+o.feature.parameters.rows+"'>"+value+"</textarea>"
 							break
