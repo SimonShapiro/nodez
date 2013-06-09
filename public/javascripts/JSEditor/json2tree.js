@@ -45,17 +45,48 @@ jsNode.prototype = {
 		return "Tree Object:"+this.name
 	},
 	toEditor: function(id) {
-		var d=""
+		function setUpRowLabels(id,node) {
+			var d="<tr>"  
+			if (node.type!="leaf") {
+				d=d+"<td>";
+				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
+				if ((node.parent.datatype=="[object Array]")&&(node.parent.child.length>1)) {
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
+				}
+				if (node.datatype=="[object Array]") {
+					d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
+				}					
+				if (node.visible) {
+					d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,-1,false)'>-</button>"
+				}
+				else {
+					d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,1,false)'>+</button>"
+				}
+				d=d+"<b>  "+node.name+"</b>"
+				d=d+"</div>"
+				d=d+"</td>";
+			}
+			else {
+				d=d+"<td>";
+				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
+				if ((node.parent.datatype=="[object Array]")&&(node.parent.child.length>1)) {
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
+				}
+			d=d+node.name;
+			d=d+"</div>"
+			d=d+"</td>";
+			}
+		return d			
+		}
+			
+		var d=""   // setUpRowLabels(id)
 		var level=eval("["+id.replace(/_/g,",")+"].length")
 		if (this.parent.datatype=="[object Array]") {
 			var ka=eval("["+id.replace(/_/g,",")+"]")
 			this.name=String(ka[ka.length-1])
 		}
 		if (this.feature) {
-			msg(this.name+" has feature of "+this.feature.type)
-			d="<tr>"  
-			d=d+"<td>";
-			d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
+//			msg(this.name+" has feature of "+this.feature.type)
 			switch(this.feature.type)
 			{
 				case "invisible": {
@@ -63,18 +94,21 @@ jsNode.prototype = {
 					break
 				}
 				case "textarea": {
-					d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+this.feature.parameters.rows+"'>"+this.value+"</textarea>"
+					d=setUpRowLabels(id,this)
+					d=d+"<td><div id='col2'><textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+this.feature.parameters.rows+"'>"+this.value+"</textarea>"
 					break
 				}
 				case "checkboxes": {
+					d=setUpRowLabels(id,this)
 					for (i in this.feature.parameter.options) {
 //								msg(o.feature.parameter.options[i])
-						d=d+"<input type='checkbox' class='jsForm_input' onchange='readForm()' id='"+id+"' value='"+this.feature.parameter.options[i]+"'>"+this.feature.parameter.options[i]+"</input></br>"
+						d=d+"<td><div id='col2'><input type='checkbox' class='jsForm_input' onchange='readForm()' id='"+id+"' value='"+this.feature.parameter.options[i]+"'>"+this.feature.parameter.options[i]+"</input></br>"
 					}
 					break
 				}
 				case "select": {
-					d=d+"<select class='jsForm_select' onChange='readForm()' id='"+id+"'>"
+					d=setUpRowLabels(id,this)
+					d=d+"<td><div id='col2'><select class='jsForm_select' onChange='readForm()' id='"+id+"'>"
 					for (i in this.feature.parameters.selection) {
 						if (this.value==this.feature.parameters.selection[i]) {
 							var selctd=" SELECTED"
@@ -90,7 +124,8 @@ jsNode.prototype = {
 			}
 		}
 		else {
-			msg(this.name+" is naturale and is a "+this.datatype)
+//			msg(this.name+" is naturale and is a "+this.datatype)
+			d=setUpRowLabels(id,this)
 			d="<tr>"  
 			if (this.type!="leaf") {
 				d=d+"<td>";
@@ -122,7 +157,7 @@ jsNode.prototype = {
 				d=d+"</td>";
 				d=d+"<td>";
 				d=d+"<div id='col2'>"
-				l=Math.round(this.value.length*1.5)
+				var l=Math.round(this.value.length*1.5)
 	//			alert(l)
 				if(this.value.length>TEXTWIDTH) {
 					r=Math.round(this.value.length/TEXTWIDTH)+2
@@ -134,8 +169,8 @@ jsNode.prototype = {
 				}
 			}
 		}
-	msg(d)
-	return "Editor oriented string"
+//	msg(d)
+	return d+"</div></td></tr>"
 	}
 
 }
@@ -450,129 +485,7 @@ function buildForm(o,id,mode) {
 		o.jsForm()
 	}
 // test o.toEditor()
-	o.toEditor(id)
-	if (o.parent.datatype=="[object Array]") {
-		ka=eval("["+id.replace(/_/g,",")+"]")
-		o.name=String(ka[ka.length-1])
-	}
-	key=o.name
-	if (o.type=="leaf") {
-		var value=o.value
-		if (o.datatype=="[object Array]") {
-			value="[object Array]"
-		}
-		if (o.datatype=="[object Object]") {
-			value="[object Object]"
-		}
-	}
-	else {
-		var value="non leaf"
-	}
-//	var d=$("jsForm").html()
-//	var d=$("jsForm").html()
-	var level=eval("["+id.replace(/_/g,",")+"].length")
-//	var level=eval("["+id+"].length")
-	if(mode=="normal") {
-//setup for introduction of mode='normal'
-//		d=""
-		d="<tr>"  
-		if (value=="non leaf") {
-			d=d+"<td>";
-			d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
-			if ((o.parent.datatype=="[object Array]")&&(o.parent.child.length>1)) {
-				d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
-			}
-			if (o.datatype=="[object Array]") {
-				d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
-			}					
-			if (o.visible) {
-				d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,-1,false)'>-</button>"
-			}
-			else {
-				d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,1,false)'>+</button>"
-			}
-			d=d+"<b>  "+key+"</b>"
-			d=d+"</div>"
-			d=d+"</td>";
-		}
-		else {
-			d=d+"<td>";
-//			d=""
-			d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
-			if ((o.parent.datatype=="[object Array]")&&(o.parent.child.length>1)) {
-				d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
-			}
-			d=d+key;
-			d=d+"</div>"
-			d=d+"</td>";
-//			d=d+"</td>";   //seemd unnecessary
-			d=d+"<td>";
-			d=d+"<div id='col2'>"
-			l=Math.round(value.length*1.5)
-//			alert(l)
-			if(value.length>TEXTWIDTH) {
-				r=Math.round(value.length/TEXTWIDTH)+2
-//				msg(value.length+":"+r)
-				d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+r+"'>"+value+"</textarea>"
-			}
-			else {
-				if(o.feature) {
-					switch(o.feature.type)
-					{
-						case "invisible": {
-//							d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+value+"'>"+"</input>";
-							break
-						}
-						case "textarea": {
-							d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+o.feature.parameters.rows+"'>"+value+"</textarea>"
-							break
-						}
-						case "checkboxes": {
-							for (i in o.feature.parameter.options) {
-//								msg(o.feature.parameter.options[i])
-								d=d+"<input type='checkbox' class='jsForm_input' onchange='readForm()' id='"+id+"' value='"+o.feature.parameter.options[i]+"'>"+o.feature.parameter.options[i]+"</input></br>"
-							}
-							break
-						}
-						case "select": {
-								d=d+"<select class='jsForm_select' onChange='readForm()' id='"+id+"'>"
-								for (i in o.feature.parameters.selection) {
-									if (value==o.feature.parameters.selection[i]) {
-										var selctd=" SELECTED"
-									}
-									else {
-										var selctd=""
-									}
-									d=d+"<option value='"+o.feature.parameters.selection[i]+"'"+selctd+">"+o.feature.parameters.selection[i]+"</option>"
-								}
-								d=d+"</select>"
-							break							
-						}
-					}
-				}
-				else {
-					d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+value+"'>"+"</input>";
-				}
-			}
-			d=d+"</div>"
-			d=d+"</tr>"
-		}	
-//					document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+id+"<button id='"+id+"' onClick='moveElement(id,-1)'>Up</button>"
-//					document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+id+"<button id='"+id+"' onClick='moveElement(id,1)'>Down</button>"
-//					document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+"<br/>"
-//				alert("traversal "+key+":"+value)
-	}
-	else {
-		document.getElementById("jsForm").innerHTML=d+key+":"+"<input id='"+id+"' value='"+value+"'>"+"</input>"
-		document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+"<button>Edit</button>"
-		document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+"<button id='"+id+"' onClick='moveElement(id,-1)'>Up</button>"
-		document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+"<button id='"+id+"' onClick='moveElement(id,1)'>Down</button>"
-		document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+"<button id='"+id+"' onClick='expandElement(id,1)'>Show</button>"
-		document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+"<button id='"+id+"' onClick='collapseElement(id,1)'>Hide</button>"
-		document.getElementById("jsForm").innerHTML=document.getElementById("jsForm").innerHTML+id+"<br/>"
-//				alert("traversal "+key+":"+value)
-	}
-	d=d+"</tr>";
+	var d=o.toEditor(id,o.visible)
 //	alert(d);
 	$(".jsForm").append(d);
 //	msg(escape(d))
