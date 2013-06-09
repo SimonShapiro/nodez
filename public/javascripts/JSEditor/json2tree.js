@@ -512,10 +512,10 @@ function resetForm() {
 	$(".jsForm").empty()
 	treeWalker(tr,buildForm,"0","normal")
 }
-function saveForm() {
+function saveForm(docbase) {
 //	msg("save clicked")
 	var jsBefore=JSON.stringify(js)  //A trick for getting a deep copy?
-//	alert(jsBefore)
+	alert(js["_id"]+"("+js["_rev"]+")")
 	tree2JS(tr,js)
 	j=JSON.stringify(js)
 //	msg("Saving:"+j)
@@ -528,7 +528,7 @@ function saveForm() {
 */	
 //	msg(document.URL.split('/').slice(3)[1])
 	request=$.ajax({
-		url:"/couch/"+document.URL.split('/').slice(3)[1]+"/"+js["_id"],
+		url:"/couch/"+docbase+"/"+js["_id"],
 		type:"put",
 		data:{json:j},
 		success:function(data) {
@@ -557,30 +557,33 @@ function saveForm() {
 
 }
 
-function saveFormAs() {
+function saveFormAs(docbase) {
 //	msg("save clicked")
 	var jsBefore=JSON.stringify(js)  //A trick for getting a deep copy?
 //	alert(jsBefore)
+	var _id=prompt("Enter _id for document")
 	tree2JS(tr,js)
+	js["_id"]=_id
 	delete(js["_rev"])
 	j=JSON.stringify(js)
 	request=$.ajax({
-		url:"/couch/"+document.URL.split('/').slice(3)[1],
+		url:"/couch/"+docbase,
 		type:"post",
 		data:{json:j},
 		success:function(data) {
 //			alert('page content: ' + JSON.stringify(data))
 			alert("Updated "+JSON.stringify(data["rev"]))
-			window.location.href=data["id"];
-/*
- * 
-     		js._rev=data["rev"]
+	   		js["_rev"]=data["rev"]
 			tr=new jsNode("root",{})
 			js2Tree(tr,js)
+			//need to reset all features
 			tr.setVisibility(false,true)
-			document.getElementById("jsForm").innerHTML=""
+			if (features) {
+				jsFeatureInstall(tr,features,[])
+//				installFeatures(features,tr)
+			}
+			$(".jsForm").empty()
 			treeWalker(tr,buildForm,"0","normal")
-*/
 		},
 		error:function(data) {
 			s=JSON.parse(data["responseText"])
