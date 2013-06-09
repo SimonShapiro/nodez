@@ -573,17 +573,7 @@ function saveFormAs(docbase) {
 		success:function(data) {
 //			alert('page content: ' + JSON.stringify(data))
 			alert("Updated "+JSON.stringify(data["rev"]))
-	   		js["_rev"]=data["rev"]
-			tr=new jsNode("root",{})
-			js2Tree(tr,js)
-			//need to reset all features
-			tr.setVisibility(false,true)
-			if (features) {
-				jsFeatureInstall(tr,features,[])
-//				installFeatures(features,tr)
-			}
-			$(".jsForm").empty()
-			treeWalker(tr,buildForm,"0","normal")
+			window.location.assign("../"+js["_id"])
 		},
 		error:function(data) {
 			s=JSON.parse(data["responseText"])
@@ -622,27 +612,18 @@ function saveNewRule(rb) {
 //	alert("back")
 }
 
-function deleteForm() {
+function deleteForm(docbase,returnTo) {
 	tree2JS(tr,js)
 	j=JSON.stringify(js)
 	alert("Ready to delete:"+JSON.stringify(j))
 	request=$.ajax({
-		url:"/couch/"+document.URL.split('/').slice(3)[1]+"/"+js["_id"],
+		url:"/couch/"+docbase+"/"+js["_id"],
 		type:"delete",
 		data:{json:j},
 		success:function(data) {
 //			alert('page content: ' + JSON.stringify(data))
     		alert("Deleted "+JSON.stringify(data))
-    		js["_rev"]=data["rev"]
-			tr=new jsNode("root",{})
-			js2Tree(tr,js)
-			tr.setVisibility(false,true)
-			if (features) {
-				jsFeatureInstall(tr,features,[])
-//				installFeatures(features,tr)
-			}
-			$(".jsForm").empty()
-			treeWalker(tr,buildForm,"0","normal")
+			window.location.assign(returnTo)
 		},
 		error:function(data) {
 			s=JSON.parse(data["responseText"])

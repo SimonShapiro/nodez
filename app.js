@@ -59,6 +59,7 @@ app.post('/couch/:docbase', couch.postDoc)    // C
 app.del('/couch/:docbase/:doc', couch.deleteDoc)   // D
 
 app.get('/rule/:id', rules.displayRule)
+app.get('/rule/:id/Edit', rules.editRule)
 app.get('/rules', rules.listAll)
 app.get('/rule/analyse/:id', rules.analyseRule)
 app.get('/rule/newBasedOnWhenItem/:item/:operator/:value', rules.newRuleBasedOnWhenItem)

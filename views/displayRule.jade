@@ -14,7 +14,7 @@ html
 			i  #{clause.kItem} #{clause.kOperator} #{clause.kValue}  
 			button(onClick="location.href='newBasedOnWhenItem/#{clause.kItem}/#{clause.kOperator}/#{clause.kValue}'") *
 		if (clause.kLink.type=='exact')
-			a(href='#{clause.kLink.link}')  #{clause.kItem}
+			a(href='/rule/#{clause.kLink.link}')  #{clause.kItem}
 			|  #{clause.kOperator} #{clause.kValue} 
 		if (clause.kLink.type=='partial')
 			i  #{clause.kItem} #{clause.kOperator} #{clause.kValue}
@@ -23,5 +23,5 @@ html
 		br
 	br
 	button(onClick="location.href='analyse/#{data._id}'") Attributes needed
-	button(onClick="location.href='../couch/rules/#{data._id}'") Edit
+	button(onClick="location.href='/rule/#{data._id}/Edit'") Edit
 	

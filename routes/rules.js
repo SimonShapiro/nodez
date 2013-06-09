@@ -260,6 +260,21 @@ exports.newRuleBasedOnWhenItem = function(req,res) {
 	res.render('editNewRuleBasedOnWhen.jade',data={header:"New rule for "+id,json:JSON.stringify(json)})
 }
 
+exports.editRule = function(req,res) {
+	options={
+		url:DBROUTE+"rules"+"/"+req.params.id, //avoid hard coding the dbase
+		method:"GET"
+		}
+	console.log(JSON.stringify(options))
+	var request = require('request');
+	request(options, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			console.log("passing data back to browser")
+			res.render('editRule.jade',{data:{header:req.params.id,json:body}})
+	  }
+	})
+}
+
 exports.displayRule = function (req,res) {
 /*
  * Also need to be able to match on inverts for 

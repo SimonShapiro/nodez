@@ -8,14 +8,15 @@ html
 		script(src="/javascripts/html5Shiv/html5shiv.js")
 		//endif
 	body
-		h1 #{data.header}
+		h1 Rule Editor #{data.header}
 		table(class="jsForm")
 		br
 		br
-		button(onClick='saveNewRule("rules")') Save
-		// button(onClick='saveFormAs()') Save As :_id
+		button(onClick='saveForm("rules")') Save
+		button(onClick='saveFormAs("rules")') Save As
 		button(onClick='resetForm()') Cancel
-		// button(onClick='deleteForm()') Delete
+		button(onClick='deleteForm("rules","/rules")') Delete
+		//button(onClick='jsWalkerTest()') Test Walker
 		br
 		div(class="message")
 		script
@@ -23,6 +24,10 @@ html
 				js=!{data.json}
 				//  Features need a good understanding of the underlying data model - that is why they are explicitly added 
 				features=[
+					{
+					on:"root._id",
+						feature:{type:'invisible'}
+					},
 					{
 					on:"root._rev",
 						feature:{type:'invisible'}
@@ -54,6 +59,6 @@ html
 				if (features) {
 					jsFeatureInstall(tr,features,[])
 				}
-				tr.setVisibility(false,true)
+				//tr.setVisibility(false,true)
 				treeWalker(tr,buildForm,"0","normal")
 			})
