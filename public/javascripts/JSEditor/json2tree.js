@@ -561,29 +561,36 @@ function saveFormAs(docbase) {
 //	msg("save clicked")
 	var jsBefore=JSON.stringify(js)  //A trick for getting a deep copy?
 //	alert(jsBefore)
-	var _id=prompt("Enter _id for document")
-	tree2JS(tr,js)
-	js["_id"]=_id
-	delete(js["_rev"])
-	j=JSON.stringify(js)
-	request=$.ajax({
-		url:"/couch/"+docbase,
-		type:"post",
-		data:{json:j},
-		success:function(data) {
-//			alert('page content: ' + JSON.stringify(data))
-			alert("Updated "+JSON.stringify(data["rev"]))
-			window.location.assign("../"+js["_id"])
-		},
-		error:function(data) {
-			s=JSON.parse(data["responseText"])
-			alert("Failure "+JSON.stringify(s.reason))
-    		js=JSON.parse(jsBefore)
-			resetForm()  //consiider setting a paramter on reetForm to be resetForm with ...
+	var _id=prompt("Enter _id for document","Automatically assigned")
+	if (_id) {
+		tree2JS(tr,js)
+		if (_id=="Automatically assigned") {
+			delete js["_id"]
 		}
-	});
+		else {
+			js["_id"]=_id
+		}
+		delete(js["_rev"])
+		j=JSON.stringify(js)
+		request=$.ajax({
+			url:"/couch/"+docbase,
+			type:"post",
+			data:{json:j},
+			success:function(data) {
+	//			alert('page content: ' + JSON.stringify(data))
+				alert("Created "+JSON.stringify(data["id"]))
+				js["_id"]=data["id"]
+				window.location.assign("../"+js["_id"])
+			},
+			error:function(data) {
+				s=JSON.parse(data["responseText"])
+				alert("Failure "+JSON.stringify(s.reason))
+	    		js=JSON.parse(jsBefore)
+				resetForm()  //consiider setting a paramter on reetForm to be resetForm with ...
+			}
+		});
+	}
 //	alert("back")
-
 }
 
 function saveNewRule(rb) {

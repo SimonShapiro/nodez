@@ -46,8 +46,8 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-//DBROUTE='http://localhost:5984/'
-DBROUTE='http://simons.iriscouch.com/'
+DBROUTE='http://localhost:5984/'
+//DBROUTE='http://simons.iriscouch.com/'
 
 app.get('/', routes.index);
 
