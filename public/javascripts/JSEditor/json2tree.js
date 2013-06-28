@@ -41,6 +41,15 @@ jsNode.prototype = {
 		}
 		alert(children)
 	},
+	moveChild:function(i,dir) {
+//		msg("asked to move child "+i+" by "+dir)
+		var tmp=this.child[i]
+		var trgt=i+dir
+		if ((trgt>=0) && (trgt<this.child.length)) {
+			this.child[i]=this.child[trgt]
+			this.child[trgt]=tmp
+		}
+	},
 	toString: function() {
 		return "Tree Object:"+this.name
 	},
@@ -50,8 +59,11 @@ jsNode.prototype = {
 			if (node.type!="leaf") {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
-				if ((node.parent.datatype=="[object Array]")&&(node.parent.child.length>1)) {
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
+				if ((node.parent.datatype=="[object Array]")&&(node.parent.child.length>1)) {  // not too sure if this gets executed
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Up</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Down</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
+//					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
 				}
 				if (node.datatype=="[object Array]") {
 					d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
@@ -66,11 +78,13 @@ jsNode.prototype = {
 				d=d+"</div>"
 				d=d+"</td>";
 			}
-			else {
+			else {  // not too sure if this code gets executed
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
 				if ((node.parent.datatype=="[object Array]")&&(node.parent.child.length>1)) {
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Up</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Down</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
 				}
 			d=d+node.name;
 			d=d+"</div>"
@@ -130,8 +144,11 @@ jsNode.prototype = {
 			if (this.type!="leaf") {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
-				if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {
+				if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {  //is this the only place where this operates?
+					d=d+"<button id='"+id+"' onClick='moveElement(id,-1)'>\u2191</button>"  //Up
+					d=d+"<button id='"+id+"' onClick='moveElement(id,1)'>\u2193</button>" // Down
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
+//					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
 				}
 				if (this.datatype=="[object Array]") {
 					d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
@@ -150,6 +167,9 @@ jsNode.prototype = {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
 				if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Up</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Down</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
 				}
 				d=d+this.name;
@@ -297,7 +317,7 @@ function moveEl(el,dir){
 	alert(i)
 	alert("moving "+el+" "+dir)
 }
-function moveElement(el,dir) {
+function moveElementOld(el,dir) {
 	ndx=eval("["+el+"]")
 	pndx=ndx.slice(0,(ndx.length-1))
 	var p=tr
@@ -351,6 +371,22 @@ function expandOrContractElement(id,dir,prop) {
 //		installFeatures(features,tr)
 	}
 	p.setVisibility((dir==1),prop)
+	$(".jsForm").empty()
+	treeWalker(tr,buildForm,"0","normal")
+//	$("jsForm").html("</table>")
+}
+function moveElement(id,dir) {
+	ndx=eval("["+id.replace(/_/g,",")+"]")
+	var p=tr
+	for (i=1;i<ndx.length;i++) {
+		p=p.child[ndx[i]]
+	}
+	p.parent.moveChild(parseInt(ndx.slice(-1)),dir)
+	if (features) {
+		jsFeatureInstall(tr,features,[])
+//		installFeatures(features,tr)
+	}
+//	p.setVisibility((dir==1),prop)
 	$(".jsForm").empty()
 	treeWalker(tr,buildForm,"0","normal")
 //	$("jsForm").html("</table>")
