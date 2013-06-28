@@ -60,7 +60,7 @@ jsNode.prototype = {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
 				if ((node.parent.datatype=="[object Array]")&&(node.parent.child.length>1)) {  // not too sure if this gets executed
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Up</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>2Up</button>"
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Down</button>"
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
 //					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
@@ -82,7 +82,7 @@ jsNode.prototype = {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
 				if ((node.parent.datatype=="[object Array]")&&(node.parent.child.length>1)) {
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Up</button>"
+					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>1Up</button>"
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Down</button>"
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
 				}
@@ -167,9 +167,8 @@ jsNode.prototype = {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
 				if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Up</button>"
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Down</button>"
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
+					d=d+"<button id='"+id+"' onClick='moveElement(id,-1)'>\u2191</button>"  //Up
+					d=d+"<button id='"+id+"' onClick='moveElement(id,1)'>\u2193</button>" // Down
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
 				}
 				d=d+this.name;
@@ -438,7 +437,7 @@ function deepCopy(source) {
 	return target
 }
 
-function duplicateAChild(id) {
+function duplicateAChild(id) {  //allow a child to be created via a structure attached to a feature.
 //	alert("in the child factory")
 	ndx=eval("["+id.replace(/_/g,",")+"]")
 	var p=tr

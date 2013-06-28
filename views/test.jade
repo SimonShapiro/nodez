@@ -8,12 +8,12 @@ html
 		script(src="/javascripts/html5Shiv/html5shiv.js")
 		//endif
 	body
-		h1 Editor #{data.header}
+		h1 Test Editor #{data.header}
 		table(class="jsForm")
 		br
 		br
-		button(onClick='saveForm()') Save
-		button(onClick='saveFormAs()') Save As :_id
+		button(onClick='saveForm("dictionary")') Save
+		button(onClick='saveFormAs("dictionary")') Save As :_id
 		button(onClick='resetForm()') Cancel
 		button(onClick='deleteForm()') Delete
 		//button(onClick='jsWalkerTest()') Test Walker
