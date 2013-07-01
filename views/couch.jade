@@ -12,8 +12,8 @@ html
 		table(class="jsForm")
 		br
 		br
-		button(onClick='saveForm("dictionary")') Save
-		button(onClick='saveFormAs("dictionary")') Save As :_id
+		button(onClick='saveForm("#{data.docbase}")') Save
+		button(onClick='saveFormAs("#{data.docbase}")') Save As :_id
 		button(onClick='resetForm()') Cancel
 		button(onClick='deleteForm()') Delete
 		//button(onClick='jsWalkerTest()') Test Walker

@@ -149,7 +149,7 @@ jsNode.prototype = {
 		}
 		else {
 //			msg(this.name+" is naturale and is a "+this.datatype)
-			d=setUpRowLabels(id,this)
+//			d=setUpRowLabels(id,this)
 //			msg("before crash:"+this.type+":"+this.datatype)
 			d="<tr>"  
 			if (this.type!="leaf") {

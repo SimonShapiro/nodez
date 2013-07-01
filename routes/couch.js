@@ -27,9 +27,9 @@ client.del('posts/123/', function(err, res, body) {
 });* 
 * 
 * */
-function passToBrowser(res,json) {
+function passToBrowser(res,docbase,json) {
 		console.log("passing data back to browser")
-		res.render('test.jade',data={header:"passToBrowser",json:json})
+		res.render('couch.jade',data={header:"passToBrowser",docbase:docbase,json:json})
 		return true	
 }
 
@@ -42,7 +42,7 @@ exports.getDoc= function(req, res){
 	var request = require('request');
 	request(options, function (error, response, body) {
 		if (!error && response.statusCode == 200) {
-			passToBrowser(res,body)
+			passToBrowser(res,req.params.docbase,body)
 	  }
 	})
 }
