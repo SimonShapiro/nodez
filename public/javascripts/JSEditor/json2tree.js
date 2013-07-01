@@ -1,6 +1,14 @@
 TEXTWIDTH=80
 MAXLINES=8
 
+function isEmpty(obj) {
+	for(var prop in obj) {
+		if(obj.hasOwnProperty(prop))
+			return false
+	}
+	return true
+}
+
 function jsNode(nm,o) {
 	this.name=nm;
 	this.parent={}
@@ -8,6 +16,7 @@ function jsNode(nm,o) {
 	this.visible=true  // are you visible
 //why should this structure hold visibility and not the page?	
 	this.datatype=Object.prototype.toString.call(o)
+//	msg(this.name+" is a node of type "+this.datatype)
 	if ((this.datatype!="[object Object]") && (this.datatype!="[object Array]")) {
 		this.value=o
 	}
@@ -90,6 +99,7 @@ jsNode.prototype = {
 			d=d+"</div>"
 			d=d+"</td>";
 			}
+//		msg(d)
 		return d			
 		}
 			
@@ -140,16 +150,19 @@ jsNode.prototype = {
 		else {
 //			msg(this.name+" is naturale and is a "+this.datatype)
 			d=setUpRowLabels(id,this)
+//			msg("before crash:"+this.type+":"+this.datatype)
 			d="<tr>"  
 			if (this.type!="leaf") {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
+// a stub '!leaf' has no children				
 				if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {  //is this the only place where this operates?
 					d=d+"<button id='"+id+"' onClick='moveElement(id,-1)'>\u2191</button>"  //Up
 					d=d+"<button id='"+id+"' onClick='moveElement(id,1)'>\u2193</button>" // Down
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
 //					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
 				}
+//				msg("after crash")
 				if (this.datatype=="[object Array]") {
 					d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
 				}					
@@ -166,25 +179,36 @@ jsNode.prototype = {
 			else {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
-				if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {
-					d=d+"<button id='"+id+"' onClick='moveElement(id,-1)'>\u2191</button>"  //Up
-					d=d+"<button id='"+id+"' onClick='moveElement(id,1)'>\u2193</button>" // Down
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
-				}
+// a stub 'leaf' has no children	
+//				msg("Children?"+(isEmpty(this.child)))
+				if (!isEmpty(this.child)) {
+					if ((this.parent.datatype=="[object Array]")&&(this.parent.child.length>1)) {
+						d=d+"<button id='"+id+"' onClick='moveElement(id,-1)'>\u2191</button>"  //Up
+						d=d+"<button id='"+id+"' onClick='moveElement(id,1)'>\u2193</button>" // Down
+						d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
+					} 
+				}			
+//				msg("here "+this.name+this.value.length)
 				d=d+this.name;
 				d=d+"</div>"
 				d=d+"</td>";
-				d=d+"<td>";
-				d=d+"<div id='col2'>"
-				var l=Math.round(this.value.length*1.5)
-	//			alert(l)
-				if(this.value.length>TEXTWIDTH) {
-					r=Math.round(this.value.length/TEXTWIDTH)+2
-	//				msg(value.length+":"+r)
-					d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+r+"'>"+this.value+"</textarea>"
-				}
+				if (this.value) {
+					d=d+"<td>";
+					d=d+"<div id='col2'>"
+					var l=Math.round(this.value.length*1.5)
+		//			alert(l)
+					if(this.value.length>TEXTWIDTH) {
+						r=Math.round(this.value.length/TEXTWIDTH)+2
+		//				msg(value.length+":"+r)
+						d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+r+"'>"+this.value+"</textarea>"
+					}
+					else {
+						d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+this.value+"'>"+"</input>";
+					}
+				}	
 				else {
-					d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+this.value+"'>"+"</input>";
+					d=d+"<td>";
+					d=d+"<div id='col2'>"
 				}
 			}
 		}
