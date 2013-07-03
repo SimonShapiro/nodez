@@ -74,8 +74,16 @@ jsNode.prototype = {
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
 //					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
 				}
-				if (node.datatype=="[object Array]") {
-					d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
+				if (node.datatype=="[object Array]") {  //non-arrays with the newFromTemplate also needs to be accomodated.
+					if (node.feature) {
+						if (node.feature.type=="newFromTemplate") {
+		//					msg("Setting up feature "+node.feature.type)
+							d=d+"<button id='"+id+"' onClick='insertFromTemplate(id)'>*</button>"
+						}
+					}
+					else {
+						d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
+					}
 				}					
 				if (node.visible) {
 					d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,-1,false)'>-</button>"
@@ -95,6 +103,12 @@ jsNode.prototype = {
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Down</button>"
 					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
 				}
+				if (node.feature) {
+					if (node.feature.type=="newFromTemplate") {
+	//					msg("Setting up feature "+node.feature.type)
+						d=d+"<button id='"+id+"' onClick='insertFromTemplate(id)'>*</button>"
+					}
+				}
 			d=d+node.name;
 			d=d+"</div>"
 			d=d+"</td>";
@@ -113,6 +127,11 @@ jsNode.prototype = {
 //			msg(this.name+" has feature of "+this.feature.type)
 			switch(this.feature.type)
 			{
+				case "newFromTemplate": {
+//					msg("New from template installed")
+					d=setUpRowLabels(id,this)
+					break
+				}
 				case "invisible": {
 //							d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+value+"'>"+"</input>";
 					break
@@ -209,6 +228,7 @@ jsNode.prototype = {
 				else {
 					d=d+"<td>";
 					d=d+"<div id='col2'>"
+					d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+this.value+"'>"+"</input>";
 				}
 			}
 		}
@@ -295,10 +315,12 @@ function isArray(o) {
 
 function js2Tree(t,o) {
 //	alert("so far "+JSON.stringify(t))
-//	alert("building tree from js "+JSON.stringify(o))
+//	msg("building tree from js "+JSON.stringify(o))
     for (var i in o) {
-//    	alert(Object.prototype.toString.call(o[i]))
+//    	msg(Object.prototype.toString.call(o[i])+":"+i+":"+o[i])
         var last=t.addChild(new jsNode(i,o[i]));
+//        msg("here+"+last+typeof(o[i]))
+//		msg(JSON.stringify(last))
         if (typeof(o[i])=="object") {
 //        	alert("down the rabbit hole")
             //going one step down in the object tree!!
@@ -462,7 +484,7 @@ function deepCopy(source) {
 }
 
 function duplicateAChild(id) {  //allow a child to be created via a structure attached to a feature.
-//	alert("in the child factory")
+//	msg("in the child factory")
 	ndx=eval("["+id.replace(/_/g,",")+"]")
 	var p=tr
 	for (i=1;i<ndx.length;i++) {
@@ -472,17 +494,17 @@ function duplicateAChild(id) {  //allow a child to be created via a structure at
 	if (p.child[0].child.length>0) {
 		jstub={}
 		tree2JS(p.child[0],jstub)
-		jj=new jsNode(String(p.child.length),{})
+		var jj=new jsNode(String(p.child.length),{})
 		tree2Tree(p.child[0],jj)
 //		msg(JSON.stringify(p.child[0]))
-//		msg(JSON.stringify(jj))
+//		msg(jj.name+jj.child[0].name+jj.child[0].value)
 		p.child.push(jj)
 		jj.setParent(p)
 	}
 	else {
 //		msg("Attempting to clone simple array member as"+JSON.stringify(p.child[0]))		
 		jj=new jsNode(String(p.child.length),{})
-		jj.value=""
+		jj.value="" //need something to base the field on
 		jj.datatype=p.child[0].datatype
 //		tree2Tree(p.child[0],jj)
 //		msg(JSON.stringify(p.child[0]))
@@ -512,6 +534,31 @@ function duplicateAChild(id) {  //allow a child to be created via a structure at
 //	$("jsForm").html("</table>")
 //	alert(JSON.stringify(p.child[p.child.length-1]))
 }
+
+function insertFromTemplate(id) {  //allow a child to be created via a structure attached to a feature.
+//	msg("inserting template")
+	ndx=eval("["+id.replace(/_/g,",")+"]")
+	var p=tr
+	var jj=new jsNode("template",{})
+	for (i=1;i<ndx.length;i++) {
+		p=p.child[ndx[i]]
+	}
+//	msg(JSON.stringify(p.feature.parameters.template))
+	js2Tree(jj,p.feature.parameters.template)
+//	msg(jj)
+	p.child.push(jj)
+	jj.setParent(p)
+	p.type="node"
+	if (features) {
+		jsFeatureInstall(tr,features,[])
+//		installFeatures(features,tr)
+	}
+	$(".jsForm").empty()
+	treeWalker(tr,buildForm,"0","normal")
+	$(".jsForm").empty()
+	treeWalker(tr,buildForm,"0","normal")
+}
+
 
 function deleteItem(id) {
 //	msg("In delete item: "+id)
