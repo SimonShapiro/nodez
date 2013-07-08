@@ -7,6 +7,7 @@ var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
   , couch = require('./routes/couch')
+  , hier = require('./routes/hierarchy')
   , rules = require('./routes/rules')
   , test = require('./routes/test')
   , http = require('http')
@@ -57,6 +58,11 @@ app.get('/couch/:docbase/:doc', couch.getDoc) // R
 app.put('/couch/:docbase/:doc', couch.putDoc) // U
 app.post('/couch/:docbase', couch.postDoc)    // C
 app.del('/couch/:docbase/:doc', couch.deleteDoc)   // D
+
+app.get('/hier/:docbase/:doc', hier.getDoc) // R
+app.put('/hier/:docbase/:doc', hier.putDoc) // U
+app.post('/hier/:docbase', hier.postDoc)    // C
+app.del('/hier/:docbase/:doc', hier.deleteDoc)   // D
 
 app.get('/rule/:id', rules.displayRule)
 app.get('/rule/:id/Edit', rules.editRule)

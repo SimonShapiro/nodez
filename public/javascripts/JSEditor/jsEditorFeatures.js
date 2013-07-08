@@ -3,7 +3,7 @@ function installFeatures(featureset,t) {
 	for (f in featureset) {
 		var path=featureset[f].on
 		var options=featureset[f].feature
-//		msg("Installing feature on:"+path+":"+JSON.stringify(options))
+		msg("Installing feature on:"+path+":"+JSON.stringify(options))
 		//jsFromPath sohuld return an iterator [nodes,...] when x.*.z is used.  Requires jsPathWalker to change :-(
 		o=jsFromPath(path,t)  
 		o.feature=options
@@ -26,6 +26,13 @@ function jsWalkerTest() {
 }
 
 function jsFeatureInstall(t,feat,trl) {
+//	msg("Maybe install global template for "+t.name)  //if a global exists set it as a template on the node?
+	for (f in feat) {
+		if((feat[f].on=="root") && (feat[f].feature.type=="globalTemplate") && (feat[f].feature.parameters.on)==t.name) {
+//			msg("Instaling "+feat[f].on+":"+JSON.stringify(feat[f].feature.parameters.on)+":"+t.name)
+			t.feature={type:'newFromTemplate',parameters:{template:feat[f].feature.parameters.template}}
+		}
+	}
 	trl.push(t.name)
 //	msg("jsWalker:"+JSON.stringify(trl))
 	for (f in feat) {

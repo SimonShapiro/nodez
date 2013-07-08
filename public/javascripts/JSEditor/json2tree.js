@@ -68,12 +68,6 @@ jsNode.prototype = {
 			if (node.type!="leaf") {
 				d=d+"<td>";
 				d=d+"<div id='col1' style='margin-left:"+String(level*10)+"'>"
-				if ((node.parent.datatype=="[object Array]")&&(node.parent.child.length>1)) {  // not too sure if this gets executed
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>2Up</button>"
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Down</button>"
-					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>Del</button>"
-//					d=d+"<button id='"+id+"' onClick='deleteItem(id)'>x</button>"
-				}
 				if (node.datatype=="[object Array]") {  //non-arrays with the newFromTemplate also needs to be accomodated.
 					if (node.feature) {
 						if (node.feature.type=="newFromTemplate") {
@@ -82,18 +76,18 @@ jsNode.prototype = {
 						}
 					}
 					else {
-						d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
+							d=d+"<button id='"+id+"' onClick='duplicateAChild(id)'>*</button>"
 					}
-				}					
-				if (node.visible) {
-					d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,-1,false)'>-</button>"
 				}
-				else {
-					d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,1,false)'>+</button>"
-				}
-				d=d+"<b>  "+node.name+"</b>"
-				d=d+"</div>"
-				d=d+"</td>";
+			if (node.visible) {
+				d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,-1,false)'>-</button>"
+			}
+			else {
+				d=d+"<button id='"+id+"' onClick='expandOrContractElement(id,1,false)'>+</button>"
+			}
+			d=d+"<b>  "+node.name+"</b>"
+			d=d+"</div>"
+			d=d+"</td>";
 			}
 			else {  // not too sure if this code gets executed
 				d=d+"<td>";
@@ -123,6 +117,7 @@ jsNode.prototype = {
 			var ka=eval("["+id.replace(/_/g,",")+"]")
 			this.name=String(ka[ka.length-1])
 		}
+//		msg("test here for global template for "+this.name)  //if a global exists set it as a template on the node?
 		if (this.feature) {
 //			msg(this.name+" has feature of "+this.feature.type)
 			switch(this.feature.type)
@@ -138,20 +133,20 @@ jsNode.prototype = {
 				}
 				case "textarea": {
 					d=setUpRowLabels(id,this)
-					d=d+"<td><div id='col2'><textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+this.feature.parameters.rows+"'>"+this.value+"</textarea>"
+					d=d+"<td><div id='col2'style='margin-left:"+String(level*10)+"'><textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+this.feature.parameters.rows+"'>"+this.value+"</textarea>"
 					break
 				}
 				case "checkboxes": {
 					d=setUpRowLabels(id,this)
 					for (i in this.feature.parameter.options) {
 //								msg(o.feature.parameter.options[i])
-						d=d+"<td><div id='col2'><input type='checkbox' class='jsForm_input' onchange='readForm()' id='"+id+"' value='"+this.feature.parameter.options[i]+"'>"+this.feature.parameter.options[i]+"</input></br>"
+						d=d+"<td><div id='col2'style='margin-left:"+String(level*10)+"'><input type='checkbox' class='jsForm_input' onchange='readForm()' id='"+id+"' value='"+this.feature.parameter.options[i]+"'>"+this.feature.parameter.options[i]+"</input></br>"
 					}
 					break
 				}
 				case "select": {
 					d=setUpRowLabels(id,this)
-					d=d+"<td><div id='col2'><select class='jsForm_select' onChange='readForm()' id='"+id+"'>"
+					d=d+"<td><div id='col2'style='margin-left:"+String(level*10)+"'><select class='jsForm_select' onChange='readForm()' id='"+id+"'>"
 					for (i in this.feature.parameters.selection) {
 						if (this.value==this.feature.parameters.selection[i]) {
 							var selctd=" SELECTED"
@@ -213,21 +208,22 @@ jsNode.prototype = {
 				d=d+"</td>";
 				if (this.value) {
 					d=d+"<td>";
-					d=d+"<div id='col2'>"
+					d=d+"<div id='col2'style='margin-left:"+String(level*10)+"'>"
 					var l=Math.round(this.value.length*1.5)
 		//			alert(l)
-					if(this.value.length>TEXTWIDTH) {
+//					msg("Displaying "+this.value+":"+this.value.replace(/'/g,"&#39;"))
+					if(this.value.length>TEXTWIDTH) {  // neeed to investigate escaping this.value
 						r=Math.round(this.value.length/TEXTWIDTH)+2
 		//				msg(value.length+":"+r)
-						d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+r+"'>"+this.value+"</textarea>"
+						d=d+"<textarea class='jsForm_input' onchange='readForm()' id='"+id+"' cols='"+TEXTWIDTH+"' rows='"+r+"'>"+this.value.replace(/'/g,"&#39;")+"</textarea>"
 					}
 					else {
-						d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+this.value+"'>"+"</input>";
+						d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+this.value.replace(/'/g,"&#39;")+"'>"+"</input>";
 					}
 				}	
 				else {
 					d=d+"<td>";
-					d=d+"<div id='col2'>"
+					d=d+"<div id='col2'style='margin-left:"+String(level*10)+"'>"
 					d=d+"<input class='jsForm_input' size="+l+" onchange='readForm()' id='"+id+"' value='"+this.value+"'>"+"</input>";
 				}
 			}
@@ -268,9 +264,10 @@ function treeWalker(t,func,trail,mode) {
 	}
 
 function tree2JS(t,j) {
+	msg("In tree2js with "+t.name+":"+t.datatype)
 		for (var i in t.child) {
 			if (t.child[i].type!="leaf") {
-//				alert("processing: "+t.child[i].name)
+				msg("processing non-leaf: "+t.child[i].name+":"+t.child[i].datatype)
 	//			if (typeof(t.child[i].type!='leaf')) {
 				if(t.child[i].datatype=="[object Array]") {
 					j[t.child[i].name]=[]
@@ -283,6 +280,7 @@ function tree2JS(t,j) {
 			}
 			else {
 //				alert(t.name)
+				msg("processing leaf: "+t.child[i].name+":"+t.child[i].datatype)
 				j[t.child[i].name]=t.child[i].value
 //				alert(JSON.stringify(j))
 			}
@@ -313,11 +311,13 @@ function isArray(o) {
   return Object.prototype.toString.call(o) === '[object Array]';
 }
 
-function js2Tree(t,o) {
+function js2Tree(t,o) {  //this is only ever called when there is an object
+//	msg("In js2tree "+t.name+":"+t.type+":"+typeof(o))	  
+	t.type="node"
 //	alert("so far "+JSON.stringify(t))
 //	msg("building tree from js "+JSON.stringify(o))
     for (var i in o) {
-//    	msg(Object.prototype.toString.call(o[i])+":"+i+":"+o[i])
+//    	msg("js2tree children "+Object.prototype.toString.call(o[i])+":"+i+":"+o[i]+":"+typeof(o[i]))
         var last=t.addChild(new jsNode(i,o[i]));
 //        msg("here+"+last+typeof(o[i]))
 //		msg(JSON.stringify(last))
@@ -762,7 +762,7 @@ function readForm(){
 			p=p.child[ndx[i]]
 		}
 //		msg(allIn[k].value)
-		p.value=allIn[k].value
+		p.value=allIn[k].value.trim()
 	}
 // for each feature type - textarea works ok as a general input field
 	var allIn = $('.jsForm_select');
@@ -776,7 +776,7 @@ function readForm(){
 			p=p.child[ndx[i]]
 		}
 //		msg(allIn[k].id)
-		p.value=$("#"+allIn[k].id +" :selected").text()
+		p.value=$("#"+allIn[k].id +" :selected").text().trim()
 //		msg("Assigned:"+p.value)
 	}
 //	msg("finished readForm")

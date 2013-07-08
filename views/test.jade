@@ -25,8 +25,32 @@ html
 				//  Features need a good understanding of the underlying data model - that is why they are explicitly added 
 				features=[
 					{
-					on:"root.description",
-						feature:{type:'textarea',parameters:{rows:2}}
+					on:"root",  //only allowing for one global template 
+						feature:{type:'globalTemplate',
+							parameters:{on:"outline",template:{text:"",_note:"",outline:[]}
+						}}
+					},
+					{
+					on:"root.stub",
+						feature:{type:'newFromTemplate',parameters:{template:{
+							text:"",_note:"",outline:[]
+						}}}
+					},
+					{
+					on:"root.conclude.kOperator",  // try root.when.*.kOperator
+						feature:{type:'select',parameters:{selection:['is','is not','==','!=','>','>=','<','<=']}}
+					},
+					{
+					on:"root.when.*.kOperator",  // try root.when.*.kOperator
+						feature:{type:'select',parameters:{selection:['is','is not','==','!=','>','>=','<','<=']}}
+					},
+					{
+					on:"root.when.*.kLogic",  // try root.when.*.kLogic
+						feature:{type:'select',parameters:{selection:['AND','OR']}}
+					},
+					{
+					on:"root.when.0.kLogic",  // try root.when.*.kLogic
+						feature:{type:'select',parameters:{selection:['WHEN']}}
 					}
 				]  
 				// refactor the next few lines into a single call - jsPassToEditorControl(js,features=None)
