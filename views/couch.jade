@@ -22,19 +22,19 @@ html
 		script
 			$(document).ready(function () {
 				js=!{data.json}
-				//  Features need a good understanding of the underlying data model - that is why they are explicitly added 
-				features=[
-					{
-					on:"root.description",
-						feature:{type:'textarea',parameters:{rows:2}}
-					}
-				]  
-				// refactor the next few lines into a single call - jsPassToEditorControl(js,features=None)
 				tr=new jsNode('root',{})
 				js2Tree(tr,js)
-				if (features) {
-					jsFeatureInstall(tr,features,[])
-				}
+				//  Features need a good understanding of the underlying data model - that is why they are explicitly added
+				//features=[
+				//	{
+				//	on:"root.description",
+				//		feature:{type:'textarea',parameters:{rows:2}}
+				//	}
+				//] 
+				// refactor the next few lines into a single call - jsPassToEditorControl(js,features=None)
+				//if (features) {
+				//	jsFeatureInstall(tr,features,[])
+				//}
 				tr.setVisibility(false,true)
 				treeWalker(tr,buildForm,"0","normal")
 			})

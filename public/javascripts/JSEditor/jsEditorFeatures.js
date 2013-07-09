@@ -26,6 +26,7 @@ function jsWalkerTest() {
 }
 
 function jsFeatureInstall(t,feat,trl) {
+	msg("Installing Features")
 //	msg("Maybe install global template for "+t.name)  //if a global exists set it as a template on the node?
 	for (f in feat) {
 		if((feat[f].on=="root") && (feat[f].feature.type=="globalTemplate") && (feat[f].feature.parameters.on)==t.name) {

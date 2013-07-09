@@ -264,10 +264,10 @@ function treeWalker(t,func,trail,mode) {
 	}
 
 function tree2JS(t,j) {
-	msg("In tree2js with "+t.name+":"+t.datatype)
+//	msg("In tree2js with "+t.name+":"+t.datatype)
 		for (var i in t.child) {
 			if (t.child[i].type!="leaf") {
-				msg("processing non-leaf: "+t.child[i].name+":"+t.child[i].datatype)
+//				msg("processing non-leaf: "+t.child[i].name+":"+t.child[i].datatype)
 	//			if (typeof(t.child[i].type!='leaf')) {
 				if(t.child[i].datatype=="[object Array]") {
 					j[t.child[i].name]=[]
@@ -280,7 +280,7 @@ function tree2JS(t,j) {
 			}
 			else {
 //				alert(t.name)
-				msg("processing leaf: "+t.child[i].name+":"+t.child[i].datatype)
+//				msg("processing leaf: "+t.child[i].name+":"+t.child[i].datatype)
 				j[t.child[i].name]=t.child[i].value
 //				alert(JSON.stringify(j))
 			}
@@ -686,7 +686,7 @@ function saveFormAs(docbase) {
 	//			alert('page content: ' + JSON.stringify(data))
 				alert("Created "+JSON.stringify(data["id"]))
 				js["_id"]=data["id"]
-				window.location.assign("../"+js["_id"])
+				window.location.assign("../"+js["_id"])   //error when docbase is present
 			},
 			error:function(data) {
 				s=JSON.parse(data["responseText"])
