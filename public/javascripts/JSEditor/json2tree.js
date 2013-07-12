@@ -411,7 +411,7 @@ function expandOrContractElement(id,dir,prop) {
 	for (i=1;i<ndx.length;i++) {
 		p=p.child[ndx[i]]
 	}
-	if (features) {
+	if (features.length>0) {
 		jsFeatureInstall(tr,features,[])
 //		installFeatures(features,tr)
 	}
@@ -427,7 +427,7 @@ function moveElement(id,dir) {
 		p=p.child[ndx[i]]
 	}
 	p.parent.moveChild(parseInt(ndx.slice(-1)),dir)
-	if (features) {
+	if (features.length>0) {
 		jsFeatureInstall(tr,features,[])
 //		installFeatures(features,tr)
 	}
@@ -525,7 +525,7 @@ function duplicateAChild(id) {  //allow a child to be created via a structure at
 	js2Tree(tr,js)
 //	alert(JSON.stringify(p.child[p.child.length-1]))
 */
-	if (features) {
+	if (features.length>0) {
 		jsFeatureInstall(tr,features,[])
 //		installFeatures(features,tr)
 	}
@@ -549,7 +549,7 @@ function insertFromTemplate(id) {  //allow a child to be created via a structure
 	p.child.push(jj)
 	jj.setParent(p)
 	p.type="node"
-	if (features) {
+	if (features.length>0) {
 		jsFeatureInstall(tr,features,[])
 //		installFeatures(features,tr)
 	}
@@ -576,7 +576,7 @@ function deleteItem(id) {
 //	msg(JSON.stringify(tr))
 //	tree2JS(tr,k)
 //	msg(JSON.stringify(k))
-	if (features) {
+	if (features.length>0) {
 		jsFeatureInstall(tr,features,[])
 //		installFeatures(features,tr)
 	}
@@ -610,7 +610,7 @@ function saveElement(){
 function resetForm() {
 	tr=new jsNode("root",{})
 	js2Tree(tr,js)
-	if (features) {
+	if (features.length>0) {
 		jsFeatureInstall(tr,features,[])
 //		installFeatures(features,tr)
 	}
@@ -639,16 +639,19 @@ function saveForm(docbase) {
 		data:{json:j},
 		success:function(data) {
 //			alert('page content: ' + JSON.stringify(data))
-    		alert("Updated "+JSON.stringify(data["rev"]))
+//    		msg("Updated "+JSON.stringify(data))
+    		alert("Updated "+JSON.stringify(data))
     		js["_rev"]=data["rev"]
 			tr=new jsNode("root",{})
 			js2Tree(tr,js)
 			//need to reset all features
 			tr.setVisibility(false,true)
-			if (features) {
+//			msg("known features "+(features.length==0))
+			if (features.length>0) {
 				jsFeatureInstall(tr,features,[])
 //				installFeatures(features,tr)
 			}
+//			msg("Walking the tree")
 			$(".jsForm").empty()
 			treeWalker(tr,buildForm,"0","normal")
 		},
@@ -685,8 +688,7 @@ function saveFormAs(docbase) {
 			success:function(data) {
 	//			alert('page content: ' + JSON.stringify(data))
 				alert("Created "+JSON.stringify(data["id"]))
-				js["_id"]=data["id"]
-				window.location.assign("../"+js["_id"])   //error when docbase is present
+				window.location.href=data["id"];
 			},
 			error:function(data) {
 				s=JSON.parse(data["responseText"])

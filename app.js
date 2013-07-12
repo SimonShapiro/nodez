@@ -70,7 +70,7 @@ app.get('/rules', rules.listAll)
 app.get('/rule/analyse/:id', rules.analyseRule)
 app.get('/rule/newBasedOnWhenItem/:item/:operator/:value', rules.newRuleBasedOnWhenItem)
 
-app.get('/test', test.index)
+//app.get('/test', test.index)
 //app.get('/rules/:matchingTarget', rules.listAll)
 
 http.createServer(app).listen(app.get('port'), function(){

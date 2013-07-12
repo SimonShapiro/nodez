@@ -15,12 +15,13 @@ html
 		button(onClick='saveForm("#{data.docbase}")') Save
 		button(onClick='saveFormAs("#{data.docbase}")') Save As :_id
 		button(onClick='resetForm()') Cancel
-		button(onClick='deleteForm()') Delete
+		button(onClick='deleteForm("#{data.docbase}","/")') Delete
 		//button(onClick='jsWalkerTest()') Test Walker
 		br
 		div(class="message")
 		script
 			$(document).ready(function () {
+				features=[]
 				js=!{data.json}
 				tr=new jsNode('root',{})
 				js2Tree(tr,js)

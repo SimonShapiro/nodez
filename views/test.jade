@@ -22,6 +22,8 @@ html
 		script
 			$(document).ready(function () {
 				js=!{data.json}
+				f=!{data.persist}
+				f(js)
 				//  Features need a good understanding of the underlying data model - that is why they are explicitly added 
 				features=[
 					{

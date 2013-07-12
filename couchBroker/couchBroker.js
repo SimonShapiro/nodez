@@ -29,22 +29,23 @@ client.del('posts/123/', function(err, res, body) {
 * */
 function passToBrowser(res,docbase,json) {
 		console.log("passing data back to browser")
-		res.render('test.jade',data={header:"passToBrowser",docbase:docbase,json:json,persist:function(obj) {msg("Hello world from persist "+JSON.stringify(obj))}})
+		res.render('couch.jade',data={header:"passToBrowser",docbase:docbase,json:json})
 		return true	
 }
 
-exports.getDoc= function(req, res){
+exports.getDoc= function(docbase, doc){
 	options={
-		url:DBROUTE+req.params.docbase+"/"+req.params.doc,
+		url:DBROUTE+docbase+"/"+doc,
 		method:"GET"
 		}
-	console.log(JSON.stringify(options))
+	console.log("Calling couch broker with:"+JSON.stringify(options))
 	var request = require('request');
-	request(options, function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			passToBrowser(res,req.params.docbase,body)
-	  }
-	})
+//	request(options, function (error, response, body) {
+//		if (!error && response.statusCode == 200) {
+//			passToBrowser(res,req.params.docbase,body)
+//	  }
+//	}
+	)
 }
 
 exports.putDoc= function(req, res){
