@@ -15,15 +15,13 @@ html
 		button(onClick='saveForm("#{data.docbase}")') Save
 		button(onClick='saveFormAs("#{data.docbase}")') Save As :_id
 		button(onClick='resetForm()') Cancel
-		button(onClick='deleteForm()') Delete
+		button(onClick='deleteForm("#{data.docbase}","/")') Delete
 		//button(onClick='jsWalkerTest()') Test Walker
 		br
 		div(class="message")
 		script
 			$(document).ready(function () {
 				js=!{data.json}
-				f=!{data.persist}
-				f(js)
 				//  Features need a good understanding of the underlying data model - that is why they are explicitly added 
 				features=[
 					{
