@@ -1,0 +1,23 @@
+mixin diveIntoObject(o)
+	- var keys = Object.keys(o)
+	- for k in keys
+		li 
+			!{k} :
+			case Object.prototype.toString.call(o[k]) 
+				when "[object Array]"
+					a href='a' +
+					|		This is an array
+					| --- !{Object.prototype.toString.call(o[k])}
+					+diveIntoObject(o[k])
+				when "[object Object]"
+					|  This is an Object
+					| --- !{Object.prototype.toString.call(o[k])}
+					+diveIntoObject(o[k])
+				default
+					|  !{o[k]}
+
+html
+	h3
+	+diveIntoObject(data.json)
+	p test
+	

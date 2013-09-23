@@ -12,26 +12,29 @@ html
 		table(class="jsForm")
 		br
 		br
-		button(onClick='saveForm("rules")') Save
-		button(onClick='saveFormAs("rules")') Save As
+		button(onClick='onSave()') Save
+		button(onClick='onSaveAs()') Save As
 		button(onClick='resetForm()') Cancel
-		button(onClick='deleteForm("rules","/rules")') Delete
-		//button(onClick='jsWalkerTest()') Test Walker
+		button(onClick='onDelete()') Delete
+		button(onClick='onDelete()') Test Delete 
 		br
 		div(class="message")
 		script
 			$(document).ready(function () {
 				js=!{data.json}
+				onSave=!{data.persist.onSave}
+				onSaveAs=!{data.persist.onSaveAs}
+				onDelete=!{data.persist.onDelete}
 				//  Features need a good understanding of the underlying data model - that is why they are explicitly added 
 				features=[
-					{
-					on:"root._id",
-						feature:{type:'invisible'}
-					},
-					{
-					on:"root._rev",
-						feature:{type:'invisible'}
-					},
+					//{
+					//on:"root._id",
+					//	feature:{type:'invisible'}
+					//},
+					//{
+					//on:"root._rev",
+					//	feature:{type:'invisible'}
+					//},
 					{
 					on:"root.description",
 						feature:{type:'textarea',parameters:{rows:2}}

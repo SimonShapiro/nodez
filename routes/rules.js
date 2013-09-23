@@ -53,6 +53,105 @@
  * 
  */
 
+function persistenceObject() {
+}
+persistenceObject.prototype= {
+	constructor:persistenceObject,
+	onSave: function() {
+		var jsBefore=JSON.stringify(js)  //A trick for getting a deep copy?
+		tree2JS(tr,js)
+		j=JSON.stringify(js)
+		request=$.ajax({
+			url:"/rule/"+js["_id"],
+			type:"put",
+			data:{json:j},
+			success:function(data) {
+	//			alert('page content: ' + JSON.stringify(data))
+	//    		msg("Updated "+JSON.stringify(data))
+	    		alert("Updated "+JSON.stringify(data))
+	    		js["_rev"]=data["rev"]
+				tr=new jsNode("root",{})
+				js2Tree(tr,js)
+				//need to reset all features
+	//			tr.setVisibility(false,true)
+				if (features.length>0) {
+					jsFeatureInstall(tr,features,[])
+				}
+				$(".jsForm").empty()
+				treeWalker(tr,buildForm,"0","normal")
+			},
+			error:function(data) {
+				s=JSON.parse(data["responseText"])
+				alert("Failure "+JSON.stringify(s.reason))
+	    		js=JSON.parse(jsBefore)
+				resetForm()  //consiider setting a paramter on reetForm to be resetForm with ...
+			}
+		});
+	},
+	onSaveAs:function () {
+		var jsBefore=JSON.stringify(js)  //A trick for getting a deep copy?
+	//	alert(jsBefore)
+		var _id=prompt("Enter _id for document","Automatically assigned")
+		if (_id) {
+			tree2JS(tr,js)
+			if (_id=="Automatically assigned") {
+				delete js["_id"]
+			}
+			else {
+				js["_id"]=_id
+			}
+			delete(js["_rev"])
+			j=JSON.stringify(js)
+			request=$.ajax({
+				url:"/rule/"+js["_id"],
+				type:"post",
+				data:{json:j},
+				success:function(data) {
+		//			alert('page content: ' + JSON.stringify(data))
+					if(data.error) {
+						alert(JSON.stringify(data))
+			    		js=JSON.parse(jsBefore)
+						resetForm()  //consiider setting a paramter on reetForm to be resetForm with ...
+					}
+					else {
+						alert("Created "+JSON.stringify(data["id"]))
+						window.location.href="/rule/"+data["id"];
+					}
+				},
+				error:function(data) {
+					s=JSON.parse(data["responseText"])
+					alert("Failure "+JSON.stringify(s.reason))
+		    		js=JSON.parse(jsBefore)
+					resetForm()  //consiider setting a paramter on reetForm to be resetForm with ...
+				}
+			});
+		}
+	},  //end onSaveAs
+	onDelete:function deleteForm() {
+		tree2JS(tr,js)
+		j=JSON.stringify(js)
+		alert("Ready to delete:"+JSON.stringify(j))
+		request=$.ajax({
+			url:"/rule/"+js["_id"],
+			type:"delete",
+			data:{json:j},
+			success:function(data) {
+	//			alert('page content: ' + JSON.stringify(data))
+	    		alert("Deleted "+JSON.stringify(data))
+				window.location.assign("/rules")
+			},
+			error:function(data) {
+				s=JSON.parse(data["responseText"])
+				alert("Failure "+JSON.stringify(s.reason))
+	    		js=JSON.parse(jsBefore)
+				resetForm()  //consiider setting a paramter on reetForm to be resetForm with ...
+			}
+		});
+	//	alert("back")
+	}
+}
+
+// ============================================== Browser objects aobve this line ==============================
 
 exports.listAll = function (req,res) {
 	if (req.params.matchingTarget) {
@@ -260,20 +359,78 @@ exports.newRuleBasedOnWhenItem = function(req,res) {
 	res.render('editNewRuleBasedOnWhen.jade',data={header:"New rule for "+id,json:JSON.stringify(json)})
 }
 
-exports.editRule = function(req,res) {
-	options={
-		url:DBROUTE+"rules"+"/"+req.params.id, //avoid hard coding the dbase
-		method:"GET"
-		}
-	console.log(JSON.stringify(options))
-	var request = require('request');
-	request(options, function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			console.log("passing data back to browser")
-			res.render('editRule.jade',{data:{header:req.params.id,json:body}})
-	  }
-	})
+exports.putRule = function(req,res) {
+	var handleDb = function(status,results) {
+		console.log("CallBack knows that status="+status+":"+results)
+//		passToBrowser(res,req.params.docbase,results)
+		res.setHeader('content-type','application/json')
+		res.write(results)
+		res.end()
+		console.log("OK"+results)
+	}
+	console.log("Asked to save rule.......")
+//	var db=require('/couchBroker')//
+//	db.getDoc(req.params.docbase,req.params.doc)
+	var cB=require('couchBroker.js')
+	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
+	console.log("Asked to put "+req.body.json)
+	db.putDoc("rules",req.params.id,req.body.json,handleDb)
 }
+
+exports.postRule = function(req,res) {
+	var handleDb = function(status,results) {
+		console.log("CallBack knows that status="+status+":"+results)
+//		passToBrowser(res,req.params.docbase,results)
+		res.setHeader('content-type','application/json')
+		res.write(results)
+		res.end()
+		console.log("OK"+results)
+	}
+	console.log("Asked to save rule.......")
+//	var db=require('/couchBroker')//
+//	db.getDoc(req.params.docbase,req.params.doc)
+	var cB=require('couchBroker.js')
+	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
+	console.log("Asked to post "+req.body.json)
+	db.postDoc("rules",req.params.id,req.body.json,handleDb)
+}
+
+exports.editRule = function(req,res) {
+	var handleDb = function(status,results) {
+		var pers=new persistenceObject()
+		console.log("CallBack knows that status="+status)
+		res.render('editRule.jade',data={
+			header:"Rule editor:",
+			docbase:'rules',
+			json:results,
+			persist: pers 
+		})
+	}
+//	var db=require('/couchBroker')//
+//	db.getDoc(req.params.docbase,req.params.doc)
+	var cB=require('couchBroker.js')
+	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
+	db.getDoc('rules',req.params.id,handleDb)
+}
+
+exports.deleteRule=function(req, res){
+	var handleDb = function(status,results) {
+		console.log("CallBack knows that status="+status+":"+results)
+//		passToBrowser(res,req.params.docbase,results)
+		res.setHeader('content-type','application/json')
+		res.write(results)
+		res.end()
+		console.log("OK"+results)
+	}
+//	var db=require('/couchBroker')//
+//	db.getDoc(req.params.docbase,req.params.doc)
+	var rev=JSON.parse(req.body.json)._rev
+	console.log("in delete with:"+rev)
+	var cB=require('couchBroker.js')
+	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
+	console.log("Asked to delete "+req.body.json)
+	db.deleteDoc('rules',req.params.id,rev,handleDb)  //eventuall .doc and rev will form the oid object
+};
 
 exports.displayRule = function (req,res) {
 /*
@@ -288,51 +445,41 @@ exports.displayRule = function (req,res) {
  * 	>=		|	<
  * 
  */
-		var inverts=[]
-		
-		inverts["is"]="is not"
-		inverts["is not"]="is"
-		inverts["=="]="!="
-		inverts["!="]="=="
-		inverts["<"]=">="
-		inverts["<="]=">"
-		inverts[">"]="<="
-		inverts[">="]="<"			
+	var inverts=[]
+	
+	inverts["is"]="is not"
+	inverts["is not"]="is"
+	inverts["=="]="!="
+	inverts["!="]="=="
+	inverts["<"]=">="
+	inverts["<="]=">"
+	inverts[">"]="<="
+	inverts[">="]="<"
+					
+//	There is an async issue here	
 
-		options={
-		url:DBROUTE+"rules/"+req.params.id,
-		method:"GET",
-		headers:{'content-type':'application/json'},
-		body:req.body.json
-		}
-		console.log(JSON.stringify(options))
-		var request = require('request');
-		request(options, function (error, response, body) {
-			gerror=error
-			if (error || response.statusCode != 200) {
-	//			res.statusCode=response.statusCode
-	//	need to search for when's and change the render
-	//  should we get all lhs's and attach locally?
-				res.setHeader('content-type','application/json')
-				res.write(body)
-				res.end()
-		  		console.log("FAIL:"+response.statusCode+JSON.stringify(body))
-			}
-		  	else {
-				console.log("OK"+body)
-				data=JSON.parse(body)
-			}
+	var data   // needs to come out
 
-//				request.close()
-				var lhs_options={
-					url:DBROUTE+"rules/_design/rules/_view/rule_lhs",  // consider being specific here or pass all lhs to the render
-					method:"GET",
-					headers:{'content-type':'application/json'},
-					body:req.body.json
-				}
-				console.log('going for data:'+JSON.stringify(lhs_options))
-				var lhs_request=require('request')
-				lhs_request(lhs_options, function(error, response, body) {
+	var handleDb = function(status,results) {
+		console.log("CallBack knows that status="+status)
+//		res.render('displayRule.jade',data={
+//			header:"Rule editor:",
+//			docbase:'rules',
+//			json:results
+//		})
+		if (status==200) {
+			data=JSON.parse(results)
+			console.log("Async 0 "+JSON.stringify(data))
+// --- Matched {} in here
+			var lhs_options={
+				url:DBROUTE+"rules/_design/rules/_view/rule_lhs",  // consider being specific here or pass all lhs to the render
+				method:"GET",
+				headers:{'content-type':'application/json'},
+				body:req.body.json
+			}
+			console.log('going for data:'+JSON.stringify(lhs_options))
+			var lhs_request=require('request')
+			lhs_request(lhs_options, function(error, response, body) {
 				if (!error && response.statusCode == 200) {
 					var lhs=JSON.parse(body).rows
 					console.log(lhs.length)
@@ -376,7 +523,20 @@ exports.displayRule = function (req,res) {
 					res.write(body)
 					res.end()
 			  		console.log("FAIL:"+response.statusCode+JSON.stringify(body))
-			  	}})
-		
-		  	})
+			  	}
+			  })}// ---
+		else {
+			res.setHeader('content-type','application/json')
+			res.write(results)
+			res.end()
+	  		console.log("FAIL:"+res.statusCode+JSON.stringify(results))
+		}
+	}
+//	var db=require('/couchBroker')//
+//	db.getDoc(req.params.docbase,req.params.doc)
+	var cB=require('couchBroker.js')
+	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
+	db.getDoc('rules',req.params.id,handleDb)
+	console.log("Async 1 "+JSON.stringify(data))
+//				request.close()
 };

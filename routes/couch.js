@@ -37,13 +37,25 @@ function passToBrowser(res,docbase,json) {
 exports.getDoc= function(req, res){
 	var handleDb = function(status,results) {
 		console.log("CallBack knows that status="+status)
-		passToBrowser(res,req.params.docbase,results)
+		res.setHeader('cache-control','public,max-age=3600')
+		res.statusCode=status
+		switch (req.headers.accept) {
+			case 'application/json':
+				res.setHeader('content-type','application/json')
+				res.write(results)
+				res.end()
+				break
+			default:				
+				res.render('couch.jade',data={header:"passToBrowser",docbase:req.params.docbase,json:results})
+//				passToBrowser(res,req.params.docbase,results)
+		}
 	}
 //	var db=require('/couchBroker')//
 //	db.getDoc(req.params.docbase,req.params.doc)
 	var cB=require('couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	db.getDoc(req.params.docbase,req.params.doc,handleDb)
+	console.log("back in the game="+JSON.stringify(req.headers.accept))
 //	console.log("db.="+db.status)
 //	passToBrowser(res,req.params.docbase,body)
 }

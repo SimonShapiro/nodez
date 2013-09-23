@@ -65,6 +65,9 @@ app.post('/hier/:docbase', hier.postDoc)    // C
 app.del('/hier/:docbase/:doc', hier.deleteDoc)   // D
 
 app.get('/rule/:id', rules.displayRule)
+app.put('/rule/:id', rules.putRule)
+app.post('/rule/:id', rules.postRule)
+app.del('/rule/:id', rules.deleteRule)
 app.get('/rule/:id/Edit', rules.editRule)
 app.get('/rules', rules.listAll)
 app.get('/rule/analyse/:id', rules.analyseRule)
