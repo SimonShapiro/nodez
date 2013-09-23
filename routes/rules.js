@@ -371,7 +371,7 @@ exports.putRule = function(req,res) {
 	console.log("Asked to save rule.......")
 //	var db=require('/couchBroker')//
 //	db.getDoc(req.params.docbase,req.params.doc)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	console.log("Asked to put "+req.body.json)
 	db.putDoc("rules",req.params.id,req.body.json,handleDb)
@@ -389,7 +389,7 @@ exports.postRule = function(req,res) {
 	console.log("Asked to save rule.......")
 //	var db=require('/couchBroker')//
 //	db.getDoc(req.params.docbase,req.params.doc)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	console.log("Asked to post "+req.body.json)
 	db.postDoc("rules",req.params.id,req.body.json,handleDb)
@@ -408,7 +408,7 @@ exports.editRule = function(req,res) {
 	}
 //	var db=require('/couchBroker')//
 //	db.getDoc(req.params.docbase,req.params.doc)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	db.getDoc('rules',req.params.id,handleDb)
 }
@@ -426,7 +426,7 @@ exports.deleteRule=function(req, res){
 //	db.getDoc(req.params.docbase,req.params.doc)
 	var rev=JSON.parse(req.body.json)._rev
 	console.log("in delete with:"+rev)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	console.log("Asked to delete "+req.body.json)
 	db.deleteDoc('rules',req.params.id,rev,handleDb)  //eventuall .doc and rev will form the oid object
@@ -534,7 +534,7 @@ exports.displayRule = function (req,res) {
 	}
 //	var db=require('/couchBroker')//
 //	db.getDoc(req.params.docbase,req.params.doc)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	db.getDoc('rules',req.params.id,handleDb)
 	console.log("Async 1 "+JSON.stringify(data))

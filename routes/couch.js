@@ -52,7 +52,7 @@ exports.getDoc= function(req, res){
 	}
 //	var db=require('/couchBroker')//
 //	db.getDoc(req.params.docbase,req.params.doc)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	db.getDoc(req.params.docbase,req.params.doc,handleDb)
 	console.log("back in the game="+JSON.stringify(req.headers.accept))
@@ -71,7 +71,7 @@ exports.putDoc= function(req, res){
 	}
 //	var db=require('/couchBroker')//
 //	db.getDoc(req.params.docbase,req.params.doc)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	console.log("Asked to put "+req.body.json)
 	db.putDoc(req.params.docbase,req.params.doc,req.body.json,handleDb)
@@ -89,7 +89,7 @@ exports.postDoc= function(req, res){
 	}
 //	var db=require('/couchBroker')//
 //	db.getDoc(req.params.docbase,req.params.doc)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	console.log("Asked to put "+req.body.json)
 	db.postDoc(req.params.docbase,req.params.doc,req.body.json,handleDb)
@@ -108,7 +108,7 @@ exports.deleteDoc=function(req, res){
 //	db.getDoc(req.params.docbase,req.params.doc)
 	var rev=JSON.parse(req.body.json)._rev
 	console.log("in delete with:"+rev)
-	var cB=require('couchBroker.js')
+	var cB=require('brokers/couchBroker.js')
 	var db=new cB.couchBroker(DBROUTE)  //eventually call a a factory based on access method
 	console.log("Asked to delete "+req.body.json)
 	db.deleteDoc(req.params.docbase,req.params.doc,rev,handleDb)  //eventuall .doc and rev will form the oid object
