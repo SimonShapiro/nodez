@@ -10,6 +10,7 @@ var express = require('express')
   , hier = require('./routes/hierarchy')
   , rules = require('./routes/rules')
   , test = require('./routes/test')
+  , schema = require('./routes/schema')
   , http = require('http')
   , path = require('path')
   
@@ -72,6 +73,8 @@ app.get('/rule/:id/Edit', rules.editRule)
 app.get('/rules', rules.listAll)
 app.get('/rule/analyse/:id', rules.analyseRule)
 app.get('/rule/newBasedOnWhenItem/:item/:operator/:value', rules.newRuleBasedOnWhenItem)
+
+app.post('/schema/example', schema.generateExample)
 
 //app.get('/test', test.index)
 //app.get('/rules/:matchingTarget', rules.listAll)
