@@ -90,6 +90,7 @@ function jsonSchema(schema) {
 	this.example=new Object()
 	this.example.warnings=[]
 	this.example.errors=[]
+	this.example.items={}
 	this.schema=schema
 	this.head={}
 }	
@@ -142,49 +143,81 @@ jsonSchema.prototype={
 			return false
 		}
 	},
-	stringPropertyType:function(key) {
+	stringPropertyType:function(key,propertyNode) {
 		if ((key.name == 'type')) {
-			console.log("going for type of "+key.value)
-			this.example.type=key.value
+			console.log("In stringProperty going for type of "+key.value)
+//			this.example.type=key.value
 			if (key.value=="string") {
-				return true
-			}
-			else {
-				this.example.warnings.push({description:"'object' expected",at:key.path})			
+				propertyNode.type=key.value
+				this.head=this.schema.shift()
+				this.propertyDefault(this.head,propertyNode) 
 				return true
 			}
 		}
-		else {
-			return false
+		return false
+	},
+	arrayItem:function(key) {
+		if ((key.name == 'items')) {
+			console.log("In array item going for type of "+key.value)
+//			this.example.type=key.value
+			return true
 		}
 	},
-	propertyDefault:function (key) {
+	arrayPropertyType:function(key,propertyNode,example) {
+		if ((key.name == 'type')) {
+			console.log("going for type of "+key.value)
+//			this.example.type=key.value
+			if (key.value=="array") {
+				example[key.name]=[]
+				propertyNode.type=key.value
+				this.head=this.schema.shift()
+				if (this.arrayItem(this.head)) {
+					this.head=this.schema.shift()
+					this.parseSchema(example[key.name])
+					return true
+				}
+			}
+		}
+		return false
+	},
+	propertyDefault:function (key,propertyNode) {
 		if (key.name == 'default') {
 			console.log("going for default "+key.value)
-//			this.example["description"]=key.value
+			propertyNode.def=key.value
+			this.head=this.schema.shift()
 			return true
 		}
 		else {
 			return false
 		}
 	},
-	aProperty:function(key) {
-		this.propertyNode={}
+	aProperty:function(key,items) {
+		var propertyNode={}
+//		this.propertyNode={}
 		console.log("aProperty:"+JSON.stringify(key.name))
+		propertyNode.property=key.name
 		this.head=this.schema.shift()
 		console.log("trying "+JSON.stringify(this.head))
-		if (this.stringPropertyType(this.head)) {this.propertyNode.type=this.head.value; this.head=this.schema.shift()}
-		if (this.propertyDefault(this.head)) {this.propertyNode.def=this.head.value; this.head=this.schema.shift()}
-		console.log("recognized "+JSON.stringify(this.propertyNode))
+		if (!this.stringPropertyType(this.head,propertyNode)) {  // type = string??
+			if (!this.arrayPropertyType(this.head,propertyNode,items)) {  // type = array??
+				console.log("out of ideas for property type "+JSON.stringify(this.head))
+			}
+		}
+		console.log("recognized "+JSON.stringify(propertyNode))
+		items[key.name]=propertyNode
+//		this.example.items[propertyNode.property]=propertyNode.type
+		this.example.items[propertyNode.property]=key.path
+		console.log(JSON.stringify(this.example.items[propertyNode.property]))
 	},
-	propertyGroup:function (key) {
+	propertyGroup:function (key,items) {
 		if(key.name=='properties') {
 			if (Object.prototype.toString.call(key.value)=='[object Object]') {
 				console.log("I have properties")
 				this.head=this.schema.shift()
 				for (p in key.value) {
-					console.log("looking for property"+p+":"+this.head)
-					this.aProperty(this.head)
+					console.log("<----------- looking for property"+p+":"+JSON.stringify(this.head))
+					this.aProperty(this.head,items)
+					console.log("And out ------------->")
 				}
 				return true
 			}
@@ -197,13 +230,14 @@ jsonSchema.prototype={
 			return false
 		}
 	},
-	parseSchema: function() {
+	parseSchema: function(example) {
+		this.items=example
 		this.head=this.schema.shift()
 		if (this.schemaString(this.head)) {this.head=this.schema.shift()}
 		if (this.titleString(this.head)) {this.head=this.schema.shift()}
 		if (this.descriptionString(this.head)) {this.head=this.schema.shift()}
 		if (this.objectType(this.head)) {this.head=this.schema.shift()}
-		if (this.propertyGroup(this.head)) {this.head=this.schema.shift()}
+		if (this.propertyGroup(this.head,this.items)) {this.head=this.schema.shift()}
 	}
 }
  
@@ -216,8 +250,10 @@ exports.generateExample = function(req,res) {
 	jsonWalker(req.body,nProc,"addSnippet",stack)
 	console.log("+++++++++++++")
 	eg=new jsonSchema(nProc.str)
-	eg.parseSchema()
-	console.log("+++++++++++++")
+	example={}
+	eg.parseSchema(example)
+	console.log("++++++++++++")
+	console.log(example)
 	res.setHeader('content-type','application/json')
 //	res.write(JSON.stringify(nProc.str))
 	res.write(JSON.stringify(eg.example))
