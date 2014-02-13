@@ -11,6 +11,7 @@ var express = require('express')
   , rules = require('./routes/rules')
   , test = require('./routes/test')
   , schema = require('./routes/schema')
+  , neo=require('./routes/neo')
   , http = require('http')
   , path = require('path')
   
@@ -48,8 +49,8 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-//DBROUTE='http://localhost:5984/'
-DBROUTE='http://simons.iriscouch.com/'
+DBROUTE='http://localhost:5984/'
+//DBROUTE='http://simons.iriscouch.com/'
 
 app.get('/', routes.index);
 
@@ -75,6 +76,8 @@ app.get('/rule/analyse/:id', rules.analyseRule)
 app.get('/rule/newBasedOnWhenItem/:item/:operator/:value', rules.newRuleBasedOnWhenItem)
 
 app.post('/schema/example', schema.generateExample)
+
+app.get('/neo4j', neo.serviceRoot)
 
 //app.get('/test', test.index)
 //app.get('/rules/:matchingTarget', rules.listAll)

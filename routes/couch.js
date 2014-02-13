@@ -39,6 +39,7 @@ exports.getDoc= function(req, res){
 		console.log("CallBack knows that status="+status)
 		res.setHeader('cache-control','public,max-age=3600')
 		res.statusCode=status
+		console.log('Accept header'+req.headers.accept)
 		switch (req.headers.accept) {
 			case 'application/json':
 				res.setHeader('content-type','application/json')
