@@ -31,7 +31,6 @@ exports.getNodeById = function(req,res) {
             }
     	}	
     }
-	
 	function _CB_afterCypher(error, response, body) {
 		console.log("switching...")
 		if (!error) { 
@@ -53,7 +52,7 @@ exports.getNodeById = function(req,res) {
 			console.log("!OK "+response.statusCode+":"+options.url+":Neo4j results="+body)
 	  	}
 	}
-	function getNeo4jGetNodeById(req,res) {
+	function neo4jGetNodeById(req,res) {
 		var DBROUTE="http://localhost:7474/db/data/cypher/"
 		cypher={
 			"query":"match (n) where id(n)="+req.params.id+" return n",
@@ -73,7 +72,7 @@ exports.getNodeById = function(req,res) {
 	}
 
 	console.log('get type by id')
-	getNeo4jGetNodeById(req,res)
+	neo4jGetNodeById(req,res)
 }
 
 
