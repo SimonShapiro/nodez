@@ -11,7 +11,8 @@ exports.getNodeById = function(req,res) {
 				res.end()
 				break
 			default:				
-				res.render('nodeDisplay.jade',data={header:"Neo4j complete node details:",json:JSON.stringify(d)})
+//                res.render('nodeDisplay.jade',data={header:"Neo4j complete node details:",json:JSON.stringify(d)})
+                res.render('displayNode.jade',data={header:"Neo4j complete node details:",json:d})
 //				passToBrowser(res,req.params.docbase,results)
             }
     	}
@@ -25,7 +26,7 @@ exports.getNodeById = function(req,res) {
                 break
             default:                
                 res.status(404)
-                res.render('error.jade',data={title:"Not found"})
+                res.render('error.jade',data={title:"Not found",msg:""})
 //              passToBrowser(res,req.params.docbase,results)
             }
     	}	
@@ -36,10 +37,16 @@ exports.getNodeById = function(req,res) {
 		if (!error) { 
 			switch (response.statusCode) {
 				case 200: {
-					console.log("OK  "+response.statusCode+":"+options.url+":Neo4j results="+body)
-					neo4jExtractDataRows(req,res,body)
-					break
+                    console.log("OK  "+response.statusCode+":"+options.url+":Neo4j results="+body)
+                    neo4jExtractDataRows(req,res,body)
+                    break
 				}  // end HTTP 200
+				default: {
+                    console.log("!OK  "+response.statusCode+":"+options.url+":Neo4j results="+body)
+                    res.status(404)
+                    res.render('error.jade',data={title:"Not found",msg:body})
+                    break
+				}
 			}
 		}
 	  	else {

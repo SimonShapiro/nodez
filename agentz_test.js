@@ -73,7 +73,7 @@ exports['cypherSave'] = function(test) {
 		d.cypherSave(d)
 		d=new GeneralNode('Cluster','Treasury',{name:'Treasury'})
 		d.cypherSave(d)
-		d=new GeneralNode('Types','Cluster',{name:"Cluster"})
+		d=new GeneralNode('Types','Cluster',{name:"Cluster",template:"{'description':'string','objectives':'string'}"})
 		d.cypherSave(d)
 	}	
 
