@@ -1,0 +1,3 @@
+{"query": "match (m:Cluster),(n:Types) create (m)-[r:ISA]->(n) return r",
+"params":{}}
+
