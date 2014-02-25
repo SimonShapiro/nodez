@@ -15,6 +15,8 @@ nodes=[
     ,{"addTypedRelationship":{fromType:"Cluster",fromName:"Treasury",rel:"HAS_PARTS",toType:"Cluster",toName:"Liquidity",rdata:""}}
     ,{"addTypedNode":{type:"Cluster",data:{name:"Funding",decription:"Funding",notes:"notes&comments"}}}
     ,{"addTypedRelationship":{fromType:"Cluster",fromName:"Treasury",rel:"HAS_PARTS",toType:"Cluster",toName:"Funding",rdata:""}}
+    ,{"addTypedNode":{type:"Cluster",data:{name:"Capital",decription:"Capital Management",notes:"notes&comments"}}}
+    ,{"addTypedRelationship":{fromType:"Cluster",fromName:"Treasury",rel:"HAS_PARTS",toType:"Cluster",toName:"Capital",rdata:""}}
     ,{"addTypedNode":{type:"Application",data:{name:"LDB",decription:""}}}
     ,{"addTypedNode":{type:"Application",data:{name:"LCR",decription:""}}}
     ,{"addTypedNode":{type:"Application",data:{name:"QRM",decription:""}}}
