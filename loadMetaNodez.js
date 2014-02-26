@@ -1,9 +1,9 @@
 var n=require("nodez/nodezv3.js")
 
 metaModel =[
-    {"addAnyNode":{type:"Types",name:"Cluster",template:"{description:'string'}"}}
-    ,{"addAnyNode":{type:"Types",name:"Business Process",template:"{description:'string'}"}}
-    ,{"addAnyNode":{type:"Types",name:"Application",template:"{description:'string'}"}}
+    {"addMetaNode":{type:"Types",name:"Cluster",template:"{description:'string'}"}}
+    ,{"addMetaNode":{type:"Types",name:"Business Process",template:"{description:'string'}"}}
+    ,{"addMetaNode":{type:"Types",name:"Application",template:"{description:'string'}"}}
     ,{"addLegalRelationship":{from:"Business Process",rel:"HAS_PARTS",to:"Business Process",template:"{}"}}    
     ,{"addLegalRelationship":{from:"Cluster",rel:"HAS_PARTS",to:"Cluster",template:"{}"}}
     ,{"addLegalRelationship":{from:"Business Process",rel:"RELIES_ON",to:"Application",template:"{}"}}    
