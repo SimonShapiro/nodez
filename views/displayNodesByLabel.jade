@@ -1,0 +1,16 @@
+html
+	h1 Nodes with label='#{data.label}': #{data.json.length} found
+	table
+		each n, index in data.json
+			tr
+				td
+					b= index+1   
+				//td= n.self
+				each d in n.data
+					td= d
+				//td=	(typeof n)
+				//td= n.data.name
+				//td= n.id
+				td
+					a(href=n.verbose) Verbose
+	hr
