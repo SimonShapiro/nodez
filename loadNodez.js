@@ -1,7 +1,8 @@
 var n=require("nodez/nodezv3.js")
 
 nodes=[
-    {"addTypedNode":{type:"Cluster",data:{name:"Treasury",description:"",notes:"notes&comments"}}}
+    {"addTypedNode":{type:"Application",data:{name:"QRM",description:"Quantitative Risk Manangement system uised for structural risk management",owned:"15 years"}}}
+    ,{"addTypedNode":{type:"Cluster",data:{name:"Treasury",description:"",notes:"notes&comments"}}}
     ,{"addTypedNode":{type:"Cluster",data:{name:"ALM",description:"Asset and Liablility Management",notes:"notes&comments"}}}
     ,{"addTypedNode":{type:"Cluster",data:{name:"UK Retail Bank",description:"",notes:"notes&comments"}}}
     ,{"addTypedNode":{type:"Cluster",data:{name:"Investment Bank",description:"",notes:"notes&comments"}}}
@@ -19,7 +20,6 @@ nodes=[
     ,{"addTypedRelationship":{fromType:"Cluster",fromName:"Treasury",rel:"HAS_PARTS",toType:"Cluster",toName:"Capital",rdata:""}}
     ,{"addTypedNode":{type:"Application",data:{name:"LDB",description:""}}}
     ,{"addTypedNode":{type:"Application",data:{name:"LCR",description:""}}}
-    ,{"addTypedNode":{type:"Application",data:{name:"QRM",description:""}}}
     ,{"addTypedNode":{type:"Application",data:{name:"Poseidon",description:""}}}
     ,{"addTypedNode":{type:"Application",data:{name:"UKBA",description:""}}}
     ,{"addTypedNode":{type:"BusinessProcess",data:{name:"Hedge the structural IRR",description:""}}}
