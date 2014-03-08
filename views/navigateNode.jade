@@ -1,0 +1,17 @@
+html
+	h1 Node navigator.  Starting at #{data.json.data.name}
+	- var properties = data.json.data
+	- delete data.json.data
+	table
+		each n, index in properties
+			tr
+				td
+					b= index   
+				td= n
+				td=	(typeof n)
+	hr
+	each n, index in data.json
+		p
+			b= index 
+			|:   
+			= (typeof n) + ': ' + n  

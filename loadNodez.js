@@ -28,26 +28,4 @@ nodes=[
     ,{"addTypedRelationship":{fromType:"Cluster",fromName:"UK Retail Bank",rel:"USES",toType:"Application",toName:"UKBA",rdata:""}}
     ,{"addTypedRelationship":{fromType:"Cluster",fromName:"Wealth",rel:"USES",toType:"Application",toName:"UKBA",rdata:""}}
 ]
-/*
-n.addTypedRelationship("Cluster","Treasury","HAS_PARTS","Cluster","ALM")
-n.addTypedRelationship("Cluster","ALM","IS_ACCOUNTABLE_FOR","Business Process","Hedge the strucutral IRR")
-n.addTypedRelationship("Business Process","Hedge the strucutral IRR","RELIES_ON","Application","QRM")
-
-
-n.addTypedNode("Cluster",{name:"Treasury",description:"",notes:"notes&comments"})
-n.addTypedNode("Cluster",{name:"ALM",description:"Asset and Liablility Management",notes:"notes&comments"})
-n.addTypedNode("Cluster",{name:"FLM",description:"Funding and Liquiditiy Management",notes:"notes&comments"})
-n.addTypedNode("Cluster",{name:"UK Retail Bank",description:"",notes:"notes&comments"})
-n.addTypedNode("Cluster",{name:"Investment Bank",description:"",notes:"notes&comments"})
-n.addTypedNode("Cluster",{name:"Western Europe",description:"",notes:"notes&comments"})
-n.addTypedNode("Cluster",{name:"Africa",description:"",notes:"notes&comments"})
-
-n.addTypedNode("Application",{name:"LDB"})
-n.addTypedNode("Application",{name:"LCR"})
-n.addTypedNode("Application",{name:"QRM"})
-n.addTypedNode("Application",{name:"Poseidon"})
-
-n.addTypedNode("Business Process",{name:"Hedge the strucutral IRR"})
-*/
-
 n.series(nodes)

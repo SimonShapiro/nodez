@@ -78,6 +78,7 @@ app.get('/rule/newBasedOnWhenItem/:item/:operator/:value', rules.newRuleBasedOnW
 app.post('/schema/example', schema.generateExample)
 
 app.get('/neo4j/node/:id/verbose', neo.getNodeById)
+app.get('/neo4j/node/:id/navigate', neo.getNodeByIdWithNavigation)
 app.get('/neo4j', neo.serviceRoot)
 app.get('/neo4j/nodes/label/:label', neo.getNodesByLabel)
 

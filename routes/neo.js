@@ -64,27 +64,27 @@ exports.getNodesByLabel = function(req,res) {
 
 
 exports.getNodeById = function(req,res) {
-	function neo4jExtractDataRows(req,res,body) {
-		var b=JSON.parse(body)
-		console.log("----------")
-		console.log(res.statusCode)
-		if (res.statusCode == 200) {
-    		var d=b
-    		console.log(JSON.stringify(d))
-//    		console.log("found "+b.data.length+" row(s) of type "+Object.prototype.toString.call(b.data))
-	    	switch (req.headers.accept) {
-			case 'application/json':
-				res.setHeader('content-type','application/json')
-				res.write(JSON.stringify(b.data))
-				res.end()
-				break
-			default:				
+    function neo4jExtractDataRows(req,res,body) {
+        var b=JSON.parse(body)
+        console.log("----------")
+        console.log(res.statusCode)
+        if (res.statusCode == 200) {
+            console.log(JSON.stringify(b))
+            console.log(req.headers.accept)
+//          console.log("found "+b.data.length+" row(s) of type "+Object.prototype.toString.call(b.data))
+            switch (req.headers.accept) {
+            case 'application/json':
+                res.setHeader('content-type','application/json')
+                res.write(JSON.stringify(b))
+                res.end()
+                break
+            default:                
 //                res.render('nodeDisplay.jade',data={header:"Neo4j complete node details:",json:JSON.stringify(d)})
-                res.render('displayNode.jade',data={header:"Neo4j complete node details:",json:d})
-//				passToBrowser(res,req.params.docbase,results)
+                res.render('displayNode.jade',data={header:"Neo4j complete node details:",json:b})
+//              passToBrowser(res,req.params.docbase,results)
             }
-    	}
-    	else {
+        }
+        else {
             switch (req.headers.accept) {
             case 'application/json':
                 res.setHeader('content-type','application/json')
@@ -97,22 +97,22 @@ exports.getNodeById = function(req,res) {
                 res.render('error.jade',data={title:"Not found",msg:""})
 //              passToBrowser(res,req.params.docbase,results)
             }
-    	}	
+        }   
     }
-	function neo4jGetNodeById(req,res) {
-		var DBROUTE="http://localhost:7474/db/data/node/"+req.params.id
-		options={
-			url:DBROUTE,
-			method:"GET",
-			headers:{'content-type':'application/json'},
-			}
-		console.log("Calling Neo4j broker with:"+JSON.stringify(options))
-		var request = require('request');
-		request(options,_CB_afterCypher)
-	}
+    function neo4jGetNodeById(req,res) {
+        var DBROUTE="http://localhost:7474/db/data/node/"+req.params.id
+        options={
+            url:DBROUTE,
+            method:"GET",
+            headers:{'content-type':'application/json'},
+            }
+        console.log("Calling Neo4j broker with:"+JSON.stringify(options))
+        var request = require('request');
+        request(options,_CB_afterCypher)
+    }
 
-	console.log('get type by id')
-	neo4jGetNodeById(req,res)
+    console.log('get type by id')
+    neo4jGetNodeById(req,res)
 
     function _CB_afterCypher(error, response, body) {
         console.log("switching...")
@@ -137,6 +137,82 @@ exports.getNodeById = function(req,res) {
     }
 }
 
+exports.getNodeByIdWithNavigation = function(req,res) {
+    var returning={}
+    console.log('get type by id')
+    neo4jGetNodeById(req,res)
+
+    function abend(statusCode,errMsg) {
+        switch (req.headers.accept) {
+        case 'application/json':
+            res.setHeader('content-type','application/json')
+            res.status(statusCode)
+            res.write("{'msg':'"+errMsg+"'}")
+            res.end()
+            break
+        default:                
+            res.status(statusCode)
+            res.render('error.jade',data={title:"Error: ",msg:errMsg})
+//              passToBrowser(res,req.params.docbase,results)
+        }
+    }
+    function neo4jGetNodeById(req,res) {
+        var DBROUTE="http://localhost:7474/db/data/node/"+req.params.id
+        options={
+            url:DBROUTE,
+            method:"GET",
+            headers:{'content-type':'application/json'},
+            }
+        console.log("Calling Neo4j broker with:"+JSON.stringify(options))
+        var request = require('request');
+        request(options,_CB_afterCypher)
+    }
+    function _CB_afterCypher(error, response, body) {
+        console.log("switching...")
+        if (!error) { 
+            switch (response.statusCode) {
+                case 200: {
+                    console.log("OK  "+response.statusCode+":"+options.url+":Neo4j results="+body)
+                    neo4jExtractDataRows(req,res,body)
+                    break
+                }  // end HTTP 200
+                default: {
+                    abend(response.statusCode,"node not found")
+                }
+            }
+        }
+        else {
+            console.log("!OK "+response.statusCode+":"+options.url+":Neo4j results="+body)
+            abend(500,"server error retrieving node")
+        }
+    }
+    function neo4jExtractDataRows(req,res,body) {
+        var b=JSON.parse(body)
+        console.log("----------")
+        console.log(res.statusCode)
+        returning["data"]=b.data
+        returning["outLinks"]=b.outgoing_relationships
+        returning["inLinks"]=b.incoming_relationships
+        console.log(JSON.stringify(b))
+        console.log(req.headers.accept)
+        sendResults(returning)
+    }
+//          console.log("found "+b.data.length+" row(s) of type "+Object.prototype.toString.call(b.data))
+
+    function sendResults(returning) {
+        switch (req.headers.accept) {
+        case 'application/json':
+            res.setHeader('content-type','application/json')
+            res.write(JSON.stringify(returning))
+            res.end()
+            break
+        default:                
+//                res.render('nodeDisplay.jade',data={header:"Neo4j complete node details:",json:JSON.stringify(d)})
+            res.render('navigateNode.jade',data={header:"Neo4j node details with navigation:",json:returning})
+//              passToBrowser(res,req.params.docbase,results)
+        }
+    }
+}
 
 exports.serviceRoot = function(req,res) {
 	
