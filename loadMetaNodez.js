@@ -23,8 +23,22 @@ function recordCases(err,caseFile){
     cases.push(caseFile)    
 }
 */
+meta=[
+    {name:"BusinessInformationObject",template:'{"description":"string"}'},
+    {name:"Cluster",template:'{"description":"string"}'},
+    {name:"BusinessProcess",template:'{"description":"string"}'},
+    {name:"Application",template:'{"description":"string","version":"string"}'}
+]
+legalRels=[
+    {from:"BusinessProcess",rel:"HAS_PARTS",to:"BusinessProcess",template:"{}"},
+    {from:"Cluster",rel:"HAS_PARTS",to:"Cluster",template:"{}"},
+    {from:"BusinessProcess",rel:"RELIES_ON",to:"Application",template:"{}"},
+    {from:"BusinessProcess",rel:"NEXT",to:"BusinessProcess",template:"{}"},
+    {from:"Cluster",rel:"IS_ACCOUNTABLE_FOR",to:"BusinessProcess",template:"{}"},
+    {from:"Cluster",rel:"USES",to:"Application",template:"{}"}
+]
 function addMetaNodes(callback) {
-//    var bsync=require("async")
+/*//    var bsync=require("async")
     async.parallel(
         [
         function(_CB_) {
@@ -40,13 +54,25 @@ function addMetaNodes(callback) {
             n.addMetaNode({name:"Application",template:'{"description":"string","version":"string"}'},_CB_)
         }
         ],
-        function (err,results){
+*/
+    async.each(meta,n.addMetaNode,
+        function (err){
             console.log("Finished metanodes")
-            console.log(results)
-            callback(err,results)
+            console.log(err)
+            callback(err,null)
         }
     )
 }
+function addLegalRels(callback) {
+    async.each(legalRels,n.addLegalRelationship,
+        function (err){
+            console.log("Finished legal relationships")
+            console.log(err)
+            callback(err,null)
+        }
+    )
+}
+
 async.series(
     [
         function (callback) {
@@ -54,6 +80,9 @@ async.series(
         },
         function(callback) {
             addMetaNodes(callback)
+        },
+        function(callback) {
+            addLegalRels(callback)
         }
 /*        
         function(callback) {

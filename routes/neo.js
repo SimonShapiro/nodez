@@ -42,7 +42,8 @@ exports.getNodesByLabel = function(req,res) {
         for (n in d) {
             id=d[n].self.split("/").slice(-1)
             verbose='http://'+req.get('host')+'/neo4j/node/'+id+'/verbose'
-            nodes.push({data:d[n].data,self:d[n].self,id:id,verbose:verbose})
+            navigate='http://'+req.get('host')+'/neo4j/node/'+id+'/navigate'
+            nodes.push({data:d[n].data,self:d[n].self,id:id,verbose:verbose,navigate:navigate})
             console.log(id,verbose)
         }
         console.log(JSON.stringify(nodes))
@@ -195,7 +196,76 @@ exports.getNodeByIdWithNavigation = function(req,res) {
         returning["inLinks"]=b.incoming_relationships
         console.log(JSON.stringify(b))
         console.log(req.headers.accept)
-        sendResults(returning)
+        var async=require("async")
+        async.parallel([
+            function(callback) {  //process out nodes
+                options={
+                    url:returning["outLinks"],
+                    method:"GET",
+                    headers:{'content-type':'application/json'},
+                    }
+                console.log("Calling Neo4j broker with:"+JSON.stringify(options))
+                var request = require('request');
+                request(options,function(error,response,body) {
+                    if (error) {
+                        stateMachine["abend"]
+                    }
+                    else {
+                        links=JSON.parse(body)
+                        if (links.length>0) {
+                            console.log("I have outlinks",body,JSON.parse(body).length)
+                            returning["outLinksDetails"]=[]
+                            for (n in links) {
+                                console.log(links[n].type)
+                                if (returning["outLinksDetails"][links[n].type]==undefined) {
+                                    returning["outLinksDetails"][links[n].type]=[]
+                                }
+                                console.log(links[n].end)
+                                returning["outLinksDetails"][links[n].type].push(links[n].end)
+                            }
+//                            console.log(JSON.stringify(returning))
+                            console.log(returning)
+                          }
+                        callback(null,1)
+                    }
+                })
+            },
+            function(callback) {  //process in nodes
+                options={
+                    url:returning["inLinks"],
+                    method:"GET",
+                    headers:{'content-type':'application/json'},
+                    }
+                console.log("Calling Neo4j broker with:"+JSON.stringify(options))
+                var request = require('request');
+                request(options,function(error,response,body) {
+                    if (error) {
+                        stateMachine["abend"]
+                    }
+                    else {
+                        links=JSON.parse(body)
+                        if (links.length>0) {
+                            console.log("I have inlinks",body,JSON.parse(body).length)
+                            returning["inLinksDetails"]=[]
+                            for (n in links) {
+                                console.log(links[n].type)
+                                if (returning["inLinksDetails"]["Inverse of "+links[n].type]==undefined) {
+                                    returning["inLinksDetails"]["Inverse of "+links[n].type]=[]
+                                }
+                                console.log(links[n].end)
+                                returning["inLinksDetails"]["Inverse of "+links[n].type].push(links[n].start)
+                            }
+//                            console.log(JSON.stringify(returning))
+                            console.log(returning)
+                        }
+                        callback(null,2)
+                    }
+                })
+            }],
+            function(err,results) {  //finished parallel
+                sendResults(results)
+            })
+//        sendResults(returning)
     }
 //          console.log("found "+b.data.length+" row(s) of type "+Object.prototype.toString.call(b.data))
 
