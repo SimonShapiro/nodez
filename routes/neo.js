@@ -138,7 +138,10 @@ exports.getNodeById = function(req,res) {
     }
 }
 
+// !!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!
 exports.getNodeByIdWithNavigation = function(req,res) {
+        var async=require("async")
     var returning={}
     console.log('get type by id')
     neo4jGetNodeById(req,res)
@@ -196,73 +199,82 @@ exports.getNodeByIdWithNavigation = function(req,res) {
         returning["inLinks"]=b.incoming_relationships
         console.log(JSON.stringify(b))
         console.log(req.headers.accept)
-        var async=require("async")
-        async.parallel([
-            function(callback) {  //process out nodes
-                options={
-                    url:returning["outLinks"],
-                    method:"GET",
-                    headers:{'content-type':'application/json'},
-                    }
-                console.log("Calling Neo4j broker with:"+JSON.stringify(options))
-                var request = require('request');
-                request(options,function(error,response,body) {
-                    if (error) {
-                        stateMachine["abend"]
-                    }
-                    else {
-                        links=JSON.parse(body)
-                        if (links.length>0) {
-                            console.log("I have outlinks",body,JSON.parse(body).length)
-                            returning["outLinksDetails"]=[]
-                            for (n in links) {
-                                console.log(links[n].type)
-                                if (returning["outLinksDetails"][links[n].type]==undefined) {
-                                    returning["outLinksDetails"][links[n].type]=[]
-                                }
-                                console.log(links[n].end)
-                                returning["outLinksDetails"][links[n].type].push(links[n].end)
+//        var async=require("async")
+        processOutLinks = function(callback) {  //process out links
+            var results=[]
+            var options={
+                url:returning["outLinks"],
+                method:"GET",
+                headers:{'content-type':'application/json'},
+                }
+            console.log("Calling Neo4j broker with:"+JSON.stringify(options))
+            var request = require('request');
+            request(options,function(error,response,body) {
+                if (error) {
+                    abend(500,"server error retrieving node")
+                }
+                else {
+                    var links=JSON.parse(body)
+                    if (links.length>0) {
+                        console.log("I have outlinks",body,JSON.parse(body).length)
+                        for (var n in links) {
+                            console.log(links[n].type)
+                            if (results[links[n].type]==undefined) {
+                                results[links[n].type]=[]
                             }
-//                            console.log(JSON.stringify(returning))
-                            console.log(returning)
-                          }
-                        callback(null,1)
-                    }
-                })
-            },
-            function(callback) {  //process in nodes
-                options={
-                    url:returning["inLinks"],
-                    method:"GET",
-                    headers:{'content-type':'application/json'},
-                    }
-                console.log("Calling Neo4j broker with:"+JSON.stringify(options))
-                var request = require('request');
-                request(options,function(error,response,body) {
-                    if (error) {
-                        stateMachine["abend"]
-                    }
-                    else {
-                        links=JSON.parse(body)
-                        if (links.length>0) {
-                            console.log("I have inlinks",body,JSON.parse(body).length)
-                            returning["inLinksDetails"]=[]
-                            for (n in links) {
-                                console.log(links[n].type)
-                                if (returning["inLinksDetails"]["Inverse of "+links[n].type]==undefined) {
-                                    returning["inLinksDetails"]["Inverse of "+links[n].type]=[]
-                                }
-                                console.log(links[n].end)
-                                returning["inLinksDetails"]["Inverse of "+links[n].type].push(links[n].start)
-                            }
-//                            console.log(JSON.stringify(returning))
-                            console.log(returning)
+                            console.log(links[n].end)
+                            results[links[n].type].push(links[n].end)
                         }
-                        callback(null,2)
+//                            console.log(JSON.stringify(returning))
+                      }
+                    console.log("Out",results)
+                    callback(null,1)
+                }
+            })
+        }
+        processInLinks = function(callback) {  //process in links
+            var results=[]
+            var options={
+                url:returning["inLinks"],
+                method:"GET",
+                headers:{'content-type':'application/json'},
+                }
+            console.log("Calling Neo4j broker with:"+JSON.stringify(options))
+            var request = require('request');
+            request(options,function(error,response,body) {
+                if (error) {
+                    abend(500,"server error retrieving node")
+                }
+                else {
+                    var links=JSON.parse(body)
+                    if (links.length>0) {
+                        console.log("I have inlinks",body,JSON.parse(body).length)
+                        for (var n in links) {
+                            console.log(links[n].type)
+                            if (results["Inverse of "+links[n].type]==undefined) {
+                                results["Inverse of "+links[n].type]=[]
+                            }
+                            console.log(links[n].end)
+                            results["Inverse of "+links[n].type].push(links[n].start)
+                        }
+//                            console.log(JSON.stringify(returning))
                     }
-                })
-            }],
+                    console.log("In",results)
+                    callback(null,2)
+                }
+            })
+            console.log("In finished")
+        }
+        async.parallel([
+            function(callback) {
+                processOutLinks(callback)
+            },
+            function(callback) {
+                processInLinks(callback)
+            }
+            ],
             function(err,results) {  //finished parallel
+                console.log("Results--->",JSON.stringify(results))
                 sendResults(results)
             })
 //        sendResults(returning)
