@@ -10,8 +10,25 @@ html
 				td= n
 				td=	(typeof n)
 	hr
-	each n, index in data.json
+
+	each n, index in data.json.outLinkDetails
 		p
 			b= index 
+			|:
+		table
+			each d,i in n
+				tr
+					td= d.endType
+					td
+						a(href=d.endNavigator) #{d.endName}
+	each n, index in data.json.inLinkDetails
+		p
+			b Inverse of 
+			b= index 
 			|:   
-			= (typeof n) + ': ' + n  
+		table
+			each d,i in n
+				tr
+					td= d.endType
+					td
+						a(href=d.endNavigator) #{d.endName}
