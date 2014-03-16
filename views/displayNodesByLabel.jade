@@ -9,8 +9,14 @@ html
 				//each d in n.data
 				//td= d
 				//td=	(typeof n)
-				td= n.data.name
+				if (data.label=="Meta")
+					td
+						a(href=n.data.name)  #{n.data.name}
+				else
+					td= n.data.name
 				td= n.id
 				td
 					a(href=n.verbose) Verbose
+				td
+					a(href=n.navigate) Navigate
 	hr

@@ -1,5 +1,5 @@
 html
-	h1 Node navigator.  Starting at #{data.json.data.name}
+	h1 #{data.json.data.name}
 	- var properties = data.json.data
 	- delete data.json.data
 	table
@@ -18,7 +18,9 @@ html
 		table
 			each d,i in n
 				tr
-					td= d.endType
+					td
+						- var ref="http://localhost:3000/neo4j/nodes/label/"+d.endType
+						a(href= ref) #{d.endType} 
 					td
 						a(href=d.endNavigator) #{d.endName}
 	each n, index in data.json.inLinkDetails
@@ -29,6 +31,8 @@ html
 		table
 			each d,i in n
 				tr
-					td= d.endType
+					td
+						- var ref="http://localhost:3000/neo4j/nodes/label/"+d.endType
+						a(href= ref) #{d.endType} 
 					td
 						a(href=d.endNavigator) #{d.endName}

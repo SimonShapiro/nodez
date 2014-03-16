@@ -1,26 +1,28 @@
 exports.getNodesByLabel = function(req,res) {
-    console.log('get type by id')
-    neo4jGetNodesByLabel(req,res)
+    console.log('get type by id');
+    neo4jGetNodesByLabel(req,res);
 // async boundary
     function neo4jGetNodesByLabel(req,res) {
-        var DBROUTE="http://localhost:7474/db/data/label/"+req.params.label+"/nodes"
-        options={
-            url:DBROUTE,
-            method:"GET",
-            headers:{'content-type':'application/json'},
-            }
-        console.log("Calling Neo4j broker with:"+JSON.stringify(options))
-        var request = require('request');
+        var
+            request,
+            DBROUTE="http://localhost:7474/db/data/label/"+req.params.label+"/nodes",
+            options = {
+                url: DBROUTE,
+                method: "GET",
+                headers: {'content-type': 'application/json'}
+            };
+        console.log("Calling Neo4j broker with:" + JSON.stringify(options));
+        request = require('request');
         request(options,_CB_after)
     }
 
     function _CB_after(error, response, body) {
-        console.log("switching...")
+        console.log("switching...");
         if (!error) { 
             switch (response.statusCode) {
                 case 200: {
-                    console.log("OK  "+response.statusCode+":"+options.url+":Neo4j results="+body)
-                    neo4jExtractDataRows(req,body)
+                    console.log("OK  "+response.statusCode+":"+options.url+":Neo4j results="+body);
+                    neo4jExtractDataRows(req,body);
                     break
                 }  // end HTTP 200
                 default: {
@@ -105,7 +107,7 @@ exports.getNodeById = function(req,res) {
         options={
             url:DBROUTE,
             method:"GET",
-            headers:{'content-type':'application/json'},
+            headers:{'content-type':'application/json'}
             }
         console.log("Calling Neo4j broker with:"+JSON.stringify(options))
         var request = require('request');
@@ -164,7 +166,7 @@ exports.getNodeByIdWithNavigation = function(req,res) {
         options={
             url:DBROUTE,
             method:"GET",
-            headers:{'content-type':'application/json'},
+            headers:{'content-type':'application/json'}
             }
         console.log("Calling Neo4j broker with:"+JSON.stringify(options))
         var request = require('request');
