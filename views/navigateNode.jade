@@ -19,7 +19,7 @@ html
 			each d,i in n
 				tr
 					td
-						- var ref="http://localhost:3000/neo4j/nodes/label/"+d.endType
+						- var ref="/neo4j/nodes/label/"+d.endType
 						a(href= ref) #{d.endType} 
 					td
 						a(href=d.endNavigator) #{d.endName}

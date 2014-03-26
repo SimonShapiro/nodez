@@ -1,5 +1,197 @@
 <!DOCTYPE html>
-<head></head>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Page Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/javascripts/jquery-copy/jquery.mobile-1.4.2.css" />
+    <link rel="stylesheet" href="/javascripts/jquery-copy/jquery-ui.css" />
+    <script src="/javascripts/jquery-copy/jquery-1.10.2.js"></script>
+    <script src="/javascripts/jquery-copy/jquery-ui.js"></script>
+    <script src="/javascripts/jquery-copy/jquery.mobile-1.4.2.js"></script>
+    <script>
+        // Module /spa/
+        // Provides chat slider capability
+        //
+        var spa = (function ($) {
+
+            var
+            // Declare all other module scope variables
+                    metaNodes,          onClickSlider,      initModule,
+                    processMetaNodes,   displayTemplate,    getNodeData,
+                    getNodes,           targetNodes,        loadNodeNamesIntoList;
+
+            loadNodeNamesIntoList = function () {
+                var $new_item
+
+                if ($( '#nodeNames' ).length ) {
+                    $( '#nodeNames' ).remove();
+                    $( '#nodeDetails').children().remove();
+                    $( '#detailsHeader').text( 'Details' );
+                }
+                $( '<ul/>', {id:'nodeNames', "data-role":'listview', "data-filter":"true"} ).appendTo( $( '#nodesList' ) );
+                $( '#nodeNames').filterable();
+                $( '#nodeNames').listview();
+                for (i in targetNodes) {
+                    $new_item = $ ( '<li class="line" ><a id="'+i+'" href="#">'+targetNodes[i].data.name+'</a></li>');
+                    /*
+                     $( '<li/>', {text: data[i].data.name,
+                     class:"line",
+                     id: i
+                     }).click( getNodeData ).appendTo( $( '#lines') );
+                     //        .mouseover( displayTemplate ).click( getNodeData )
+                     //        .appendTo( $( '#lines' ) );
+                     */
+                    $new_item.click( showNodeData ).appendTo( $( '#nodeNames' ));
+                }
+                $( '#nodeNames').listview('refresh')
+            }
+
+            getNodes = function ( event ) {
+                var target_node_label = metaNodes[event.target.id].data.name
+                $( '#nodesHeader').text( target_node_label );
+                // request nodes by type
+                ajax_request = $.ajax({
+                    url: '/neo4j/nodes/label/' + target_node_label,
+                    type: 'get',
+                    headers: {Accept: 'application/json'},
+                    success: function (data) {
+                        targetNodes = data
+                        loadNodeNamesIntoList()
+                    },
+                    error: function (data) {
+                        alert('error ', data['responseText'])
+                    }
+                });
+            }
+
+            presentNodeData = function ( node_data ) {
+                var $input_field,   html_stub, n,
+                    field_size;
+
+                $( '#nodeDetails').children().remove();
+                $( '#detailsHeader').text( 'Details' );
+                for ( n in node_data.data ) {
+                    if ( node_data.data[n].hasOwnProperty( "length" )) {
+                        field_size = node_data.data[n].length;
+                    }
+                    else {
+                        field_size = 2;
+                    }
+//                    alert( n )
+//                    $input_field = $( '</div class="inputField">')
+                    html_stub = '<div class="ui-field-contain">'
+                                +   '<label for="'+n+'_label">'+n+':</label>\n'
+                                +   '<input type="text" id="'+n+'_label" size="'+field_size+'">\n'
+                                + '</div>';
+//                    $input_field.append( html_stub )
+//                    $input_field.appendTo( $( '#nodeDetails') )
+                    $( '#nodeDetails' ).append( $( html_stub)).css( "padding-left", "20px");
+                    $( '#'+n+'_label' ).val( node_data.data[n] );
+                }
+                $( '#detailsHeader').text( node_data.data['name'] );
+                $( "#nodeDetails").append( '<hr>' )
+                for ( n in node_data.outLinkDetails ) {
+                    $( '#nodeDetails').append( '<p>'+n+'</p>' )
+                    for ( k in node_data.outLinkDetails[n] ) {
+                        $( '#nodeDetails').append( '<li>'+ node_data.outLinkDetails[n][k].endName+'</li>')
+                    }
+                }
+                for ( n in node_data.inLinkDetails ) {
+                    $( '#nodeDetails').append( '<p>Inverse of '+n+'</p>' )
+                    for ( k in node_data.inLinkDetails[n] ) {
+                        $( '#nodeDetails').append( '<li>'+ node_data.inLinkDetails[n][k].endName+'</li>' )
+                    }
+                }
+                return true;
+            }
+
+            showNodeData = function ( event ) {
+                var target_node_data = targetNodes[event.target.id].data,
+                    target_node_id = targetNodes[event.target.id].id[0],
+                    node_data;
+                ajax_request = $.ajax({
+                    url: '/neo4j/node/' + target_node_id + '/navigate',
+                    type: 'get',
+                    headers: {Accept: 'application/json'},
+                    success: function (data) {
+                        node_data = data;
+                        presentNodeData( node_data );
+//                        $( '#nodeDetails').append( '<p id="navigateJSON">' + JSON.stringify(verbose_node_html) + '</p>');
+                    },
+                    error: function (data) {
+                        alert('error ', data['responseText'])
+                    }
+                });
+            }
+            // Process Meta nodes /processMetaNodes/
+            // receives Meta data and places into their containers and attaches them
+            // to the DOM
+            processMetaNodes = function (data ) {
+                var $new_item;
+                $( '<ul/>', {id:'lines', "data-role":'listview', "data-filter":"true"} ).appendTo( $( '#Meta' ) );
+                $( '#lines').listview();
+                for (i in data) {
+                    $new_item = $ ( '<li class="line" ><a id="'+i+'" href="#">'+data[i].data.name+'</a></li>');
+                    /*
+                    $( '<li/>', {text: data[i].data.name,
+                        class:"line",
+                        id: i
+                    }).click( getNodeData ).appendTo( $( '#lines') );
+                    //        .mouseover( displayTemplate ).click( getNodeData )
+                    //        .appendTo( $( '#lines' ) );
+                     */
+                    $new_item.click( getNodes ).appendTo( $( '#lines' ));
+                }
+                $( '#lines').listview('refresh')
+            }
+            // Public method /initModule/
+            // sets initial state and provides feature
+            //
+            initModule = function ($container) {
+                $container.find( "#inspect" ).click( function() {alert( "Hello" )} )
+
+                // request nodes by type
+                ajax_request = $.ajax({
+                    url: '/neo4j/nodes/label/Meta',
+                    type: 'get',
+                    headers: {Accept: 'application/json'},
+                    success: function (data) {
+                        metaNodes = data
+                        processMetaNodes(data)},
+                    error: function (data) {
+                        alert('error ', data['responseText'])
+                    }
+                });
+                return true;
+            };
+
+            return { initModule: initModule }
+
+        }(jQuery));
+        // Start spa once DOM is ready
+        //
+        jQuery(document).ready(
+        function () {
+            spa.initModule(jQuery('#spa'));
+        }
+        );
+    </script>
+</head>
+
 <body>
-	<h1>Hello world (heroku that means you!)</h1>
+    <div data-role="page" id="spa">
+        <div class="ui-grid-c">
+            <div class="ui-block-a" style="width: 20%" id="Meta"><div class="ui-bar ui-bar-a" style="height:15px">Meta</div>
+            </div>
+            <div class="ui-block-b" style="width: 20%" id="nodesList"><div id="nodesHeader" class="ui-bar ui-bar-a" style="height:15px"></div>
+            </div>
+            <div class="ui-block-c" style="width: 60%"><div id="detailsHeader" class="ui-bar ui-bar-a" style="height:15px">Details</div>
+                <div id="nodeDetails">
+                </div><!-- /grid-a -->
+            </div>
+        </div>
+    </div>
 </body>
+</html>
+

@@ -1,8 +1,17 @@
 var n=require("nodez/nodezv3.js")
 var async=require("async")
 
+
+//use of meta meta here is simply to give the browser a handle - remove in production
 meta=[
-    {name:"BusinessProcess",template:'{"description":"string"}'},
+    {name:"Meta",template:""},
+    {name:"BusinessProcess",
+      template:'{"description":"string"}',
+      schema:{
+        name:{type:"string"},
+        description:{type:"string", format:"textarea"}
+      }
+    },
     {name:"BusinessInformationObject",template:'{"description":"string"}'},
     {name:"Cluster",template:'{"description":"string"}'},
     {name:"Application",template:'{"description":"string","version":"string"}'}
