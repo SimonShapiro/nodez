@@ -14,7 +14,14 @@ meta=[
     },
     {name:"BusinessInformationObject",template:'{"description":"string"}'},
     {name:"Cluster",template:'{"description":"string"}'},
-    {name:"Application",template:'{"description":"string","version":"string"}'}
+    {name:"Application",
+      template:'{"description":"string","version":"string"}',
+      schema:{
+        name:{type:"string"},
+        version:{type:"string"},
+        description:{type:"string", format:"textarea"}
+      }
+    }
 ]
 legalRels=[
     {from:"BusinessProcess",rel:"HAS_PARTS",to:"BusinessProcess",template:"{}"},

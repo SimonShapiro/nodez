@@ -19,7 +19,10 @@
             // Declare all other module scope variables
                     metaNodes,          onClickSlider,      initModule,
                     processMetaNodes,   displayTemplate,    getNodeData,
-                    getNodes,           targetNodes,        loadNodeNamesIntoList;
+                    getNodes,           targetNodes,        loadNodeNamesIntoList,
+                    targetSchema,       frameworkAttributeList;
+
+            frameworkAttributeList = [ "creationDate","revision", "uuid", "lastModifiedDate" ]
 
             loadNodeNamesIntoList = function () {
                 var $new_item
@@ -48,7 +51,10 @@
             }
 
             getNodes = function ( event ) {
-                var target_node_label = metaNodes[event.target.id].data.name
+                var target_node_label = metaNodes[event.target.id].data.name;
+                if ( metaNodes[event.target.id].data.hasOwnProperty( "schema" )) {
+                    targetSchema = JSON.parse(metaNodes[event.target.id].data.schema)
+                }
                 $( '#nodesHeader').text( target_node_label );
                 // request nodes by type
                 ajax_request = $.ajax({
@@ -66,12 +72,23 @@
             }
 
             presentNodeData = function ( node_data ) {
-                var $input_field,   html_stub, n,
-                    field_size;
+                var $input_field,       html_stub,      field_size,
+                    n, t, d,
+                    display_order = [];
 
                 $( '#nodeDetails').children().remove();
                 $( '#detailsHeader').text( 'Details' );
+                for (t in targetSchema) {
+                    display_order.push( t );
+                }
                 for ( n in node_data.data ) {
+                    // now display balance of non-framework attributes
+                    if ( ( display_order.indexOf( n ) == -1 ) && ( frameworkAttributeList.indexOf( n ) == -1 )) {
+                        display_order.push( n );
+                    }
+                }
+                for ( d in display_order ) {
+                    n = display_order[d];
                     if ( node_data.data[n].hasOwnProperty( "length" )) {
                         field_size = node_data.data[n].length;
                     }
