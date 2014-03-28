@@ -24,7 +24,9 @@ meta=[
       schema:{
         name:{type:"string"},
         version:{type:"string"},
-        description:{type:"string", format:"textarea"}
+        description:{type:"string", format:"textarea"},
+        dateAcquired:{type:"string", format:"date"},
+        yearsOwned:{type:"string", format: "number"}
       }}
 ];
 legalRels=[
@@ -102,7 +104,7 @@ and initiatives
  * 
  */
 typedNodes=[
-    {type:"Application",data:{name:"QRM",description:"Quantitative Risk Manangement system uised for structural risk management",owned:"15 years"}}
+    {type:"Application",data:{name:"QRM",description:"Quantitative Risk Manangement system uised for structural risk management",yearsOwned:15}}
     ,{type:"BusinessProcess",data:{name:"Set Policy and Monitor Adherance",description:""}}
     ,{type:"BusinessProcess",data:{name:"BP01",description:""}}
     ,{type:"BusinessProcess",data:{name:"BP01.01",description:""}}

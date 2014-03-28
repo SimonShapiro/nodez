@@ -17,12 +17,29 @@
 
             var
             // Declare all other module scope variables
-                    metaNodes,          onClickSlider,      initModule,
-                    processMetaNodes,   displayTemplate,    getNodeData,
-                    getNodes,           targetNodes,        loadNodeNamesIntoList,
-                    targetSchema,       frameworkAttributeList;
+                    metaNodes,          onClickSlider,          initModule,
+                    processMetaNodes,   displayTemplate,        getNodeData,
+                    getNodes,           targetNodes,            loadNodeNamesIntoList,
+                    targetSchema,       frameworkAttributeList, saveCurrentNode,
+                    currentNode,        currentNodeId;
 
             frameworkAttributeList = [ "creationDate","revision", "uuid", "lastModifiedDate" ];
+
+            saveCurrentNode = function() {
+                var i,  browser_data,
+                    browser_data_object = {};
+
+                alert( "Saving: "+currentNodeId )
+                browser_data = $( '.nodeBrowserData' );
+                for (i in browser_data ) {
+                    browser_data_object[browser_data[i].id] = browser_data[i].value
+                }
+                //add framework fields object
+                for ( i in frameworkAttributeList ) {
+                    browser_data_object[frameworkAttributeList[i]]=currentNode[frameworkAttributeList[i]]
+                }
+                alert( JSON.stringify(browser_data_object ))
+            }
 
             loadNodeNamesIntoList = function () {
                 var $new_item
@@ -78,6 +95,8 @@
                     n, t, d,
                     display_order = [];
 
+                currentNode = node_data.data;
+
                 $( '#nodeDetails').children().remove();
                 $( '#detailsHeader').text( 'Details' );
                 for (t in targetSchema) {
@@ -99,18 +118,36 @@
                     }
                     html_stub = '<div class="ui-field-contain">'
                                 +   '<label for="'+n+'">'+n+':</label>\n';
+
                     // style the widget based on the format entry in the schema
                     if ( targetSchema[n] ) {
                         if ( targetSchema[n].hasOwnProperty("format") ) {
-                            // switch
-                            html_stub = html_stub + '<textarea id="'+n+'" style="width: 500px">\n</textarea>\n'
+                            // switch to one of the html5 text input types
+                            switch ( targetSchema[n].format ) {
+                                case "textarea": {
+                                    html_stub = html_stub + '<textarea class="nodeBrowserData" id="'+n+'" style="width: 95%">\n</textarea>\n';
+                                    break;
+                                }
+                                case "number": {
+                                    html_stub = html_stub + '<input type="number" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n';
+                                    break;
+                                }
+                                case "date": {
+                                    html_stub = html_stub + '<input type="date" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n';
+                                    break;
+                                }
+                                default: {
+                                    html_stub = html_stub + '<input type="text" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n';
+                                    break;
+                                }
+                            }
                         }
                         else {
-                            html_stub = html_stub + '<input type="text" id="'+n+'" size="'+field_size+'">\n'
+                            html_stub = html_stub + '<input type="text" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n'
                         }
                     }
                     else {
-                        html_stub = html_stub + '<input type="text" id="'+n+'" size="'+field_size+'">\n'
+                        html_stub = html_stub + '<input type="text" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n'
                     }
                     html_stub = html_stub + '</div>';
                     $( '#nodeDetails' ).append( $( html_stub)).css( "padding-left", "20px");
@@ -119,26 +156,27 @@
                 $( '#detailsHeader').text( node_data.data['name'] );
 
                 // show relationships
-                $( "#nodeDetails").append( '<hr>' )
+                $( "#nodeDetails").append( '<hr>' );
                 for ( n in node_data.outLinkDetails ) {
-                    $( '#nodeDetails').append( '<p>'+n+'</p>' )
+                    $( '#nodeDetails').append( '<p>'+n+'</p>' );
                     for ( k in node_data.outLinkDetails[n] ) {
                         $( '#nodeDetails').append( '<li>'+ node_data.outLinkDetails[n][k].endName+'</li>')
                     }
                 }
                 for ( n in node_data.inLinkDetails ) {
-                    $( '#nodeDetails').append( '<p>Inverse of '+n+'</p>' )
+                    $( '#nodeDetails').append( '<p>Inverse of '+n+'</p>' );
                     for ( k in node_data.inLinkDetails[n] ) {
                         $( '#nodeDetails').append( '<li>'+ node_data.inLinkDetails[n][k].endName+'</li>' )
                     }
                 }
                 return true;
-            }
+            };
 
             showNodeData = function ( event ) {
                 var target_node_data = targetNodes[event.target.id].data,
                     target_node_id = targetNodes[event.target.id].id[0],
                     node_data;
+                currentNodeId = target_node_id;
                 ajax_request = $.ajax({
                     url: '/neo4j/node/' + target_node_id + '/navigate',
                     type: 'get',
@@ -179,6 +217,7 @@
             //
             initModule = function ($container) {
                 $container.find( "#inspect" ).click( function() {alert( "Hello" )} )
+                $container.find( '#save').click( saveCurrentNode )
 
                 // request nodes by type
                 ajax_request = $.ajax({
@@ -220,6 +259,7 @@
                 </div><!-- /grid-a -->
             </div>
         </div>
+        <div id="controls"><button id="save">Save</button></div>
     </div>
 </body>
 </html>
