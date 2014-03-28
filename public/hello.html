@@ -22,7 +22,7 @@
                     getNodes,           targetNodes,        loadNodeNamesIntoList,
                     targetSchema,       frameworkAttributeList;
 
-            frameworkAttributeList = [ "creationDate","revision", "uuid", "lastModifiedDate" ]
+            frameworkAttributeList = [ "creationDate","revision", "uuid", "lastModifiedDate" ];
 
             loadNodeNamesIntoList = function () {
                 var $new_item
@@ -52,6 +52,8 @@
 
             getNodes = function ( event ) {
                 var target_node_label = metaNodes[event.target.id].data.name;
+
+                targetSchema = {};
                 if ( metaNodes[event.target.id].data.hasOwnProperty( "schema" )) {
                     targetSchema = JSON.parse(metaNodes[event.target.id].data.schema)
                 }
@@ -90,23 +92,33 @@
                 for ( d in display_order ) {
                     n = display_order[d];
                     if ( node_data.data[n].hasOwnProperty( "length" )) {
-                        field_size = node_data.data[n].length;
+                        field_size = Math.min( node_data.data[n].length,60 );
                     }
                     else {
                         field_size = 2;
                     }
-//                    alert( n )
-//                    $input_field = $( '</div class="inputField">')
                     html_stub = '<div class="ui-field-contain">'
-                                +   '<label for="'+n+'_label">'+n+':</label>\n'
-                                +   '<input type="text" id="'+n+'_label" size="'+field_size+'">\n'
-                                + '</div>';
-//                    $input_field.append( html_stub )
-//                    $input_field.appendTo( $( '#nodeDetails') )
+                                +   '<label for="'+n+'">'+n+':</label>\n';
+                    // style the widget based on the format entry in the schema
+                    if ( targetSchema[n] ) {
+                        if ( targetSchema[n].hasOwnProperty("format") ) {
+                            // switch
+                            html_stub = html_stub + '<textarea id="'+n+'" style="width: 500px">\n</textarea>\n'
+                        }
+                        else {
+                            html_stub = html_stub + '<input type="text" id="'+n+'" size="'+field_size+'">\n'
+                        }
+                    }
+                    else {
+                        html_stub = html_stub + '<input type="text" id="'+n+'" size="'+field_size+'">\n'
+                    }
+                    html_stub = html_stub + '</div>';
                     $( '#nodeDetails' ).append( $( html_stub)).css( "padding-left", "20px");
-                    $( '#'+n+'_label' ).val( node_data.data[n] );
+                    $( '#'+n ).val( node_data.data[n] );
                 }
                 $( '#detailsHeader').text( node_data.data['name'] );
+
+                // show relationships
                 $( "#nodeDetails").append( '<hr>' )
                 for ( n in node_data.outLinkDetails ) {
                     $( '#nodeDetails').append( '<p>'+n+'</p>' )

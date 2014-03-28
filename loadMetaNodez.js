@@ -4,25 +4,29 @@ var async=require("async")
 
 //use of meta meta here is simply to give the browser a handle - remove in production
 meta=[
-    {name:"Meta",template:""},
+    {name:"Meta"},
     {name:"BusinessProcess",
-      template:'{"description":"string"}',
       schema:{
         name:{type:"string"},
         description:{type:"string", format:"textarea"}
-      }
-    },
-    {name:"BusinessInformationObject",template:'{"description":"string"}'},
-    {name:"Cluster",template:'{"description":"string"}'},
+      }},
+    {name:"BusinessInformationObject",
+      schema:{
+        name:{type:"string"},
+        description:{type:"string", format:"textarea"}
+      }},
+    {name:"Cluster",
+      schema:{
+        name:{type:"string"},
+        description:{type:"string", format:"textarea"}
+      }},
     {name:"Application",
-      template:'{"description":"string","version":"string"}',
       schema:{
         name:{type:"string"},
         version:{type:"string"},
         description:{type:"string", format:"textarea"}
-      }
-    }
-]
+      }}
+];
 legalRels=[
     {from:"BusinessProcess",rel:"HAS_PARTS",to:"BusinessProcess",template:"{}"},
     {from:"Cluster",rel:"HAS_PARTS",to:"Cluster",template:"{}"},
