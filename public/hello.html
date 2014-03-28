@@ -29,7 +29,7 @@
                 var i,  browser_data,
                     browser_data_object = {};
 
-                alert( "Saving: "+currentNodeId )
+                alert( "Saving: "+currentNodeId );
                 browser_data = $( '.nodeBrowserData' );
                 for (i in browser_data ) {
                     browser_data_object[browser_data[i].id] = browser_data[i].value
@@ -39,7 +39,7 @@
                     browser_data_object[frameworkAttributeList[i]]=currentNode[frameworkAttributeList[i]]
                 }
                 alert( JSON.stringify(browser_data_object ))
-            }
+            };
 
             loadNodeNamesIntoList = function () {
                 var $new_item
@@ -190,7 +190,7 @@
                         alert('error ', data['responseText'])
                     }
                 });
-            }
+            };
             // Process Meta nodes /processMetaNodes/
             // receives Meta data and places into their containers and attaches them
             // to the DOM
@@ -210,14 +210,14 @@
                      */
                     $new_item.click( getNodes ).appendTo( $( '#lines' ));
                 }
-                $( '#lines').listview('refresh')
-            }
+                $( '#lines').listview('refresh');
+            };
             // Public method /initModule/
             // sets initial state and provides feature
             //
             initModule = function ($container) {
-                $container.find( "#inspect" ).click( function() {alert( "Hello" )} )
-                $container.find( '#save').click( saveCurrentNode )
+                $container.find( "#inspect" ).click( function() {alert( "Hello" )} );
+                $container.find( '#save').click( saveCurrentNode );
 
                 // request nodes by type
                 ajax_request = $.ajax({
@@ -225,7 +225,7 @@
                     type: 'get',
                     headers: {Accept: 'application/json'},
                     success: function (data) {
-                        metaNodes = data
+                        metaNodes = data;
                         processMetaNodes(data)},
                     error: function (data) {
                         alert('error ', data['responseText'])
