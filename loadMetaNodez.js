@@ -4,7 +4,11 @@ var async=require("async")
 
 //use of meta meta here is simply to give the browser a handle - remove in production
 meta=[
-    {name:"Meta"},
+    {name:"Meta",
+      schema: {
+        name: { type: "string" },
+        schema: { type: "string", format: "textarea" }
+      }},
     {name:"BusinessProcess",
       schema:{
         name:{type:"string"},

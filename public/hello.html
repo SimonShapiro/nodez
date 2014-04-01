@@ -17,19 +17,62 @@
 
             var
             // Declare all other module scope variables
-                    metaNodes,          onClickSlider,          initModule,
-                    processMetaNodes,   displayTemplate,        getNodeData,
+                    metaNodes,          configMap,              initModule,
+                    processMetaNodes,   createNodeFromSchema,   targetNodeLabel,
                     getNodes,           targetNodes,            loadNodeNamesIntoList,
                     targetSchema,       frameworkAttributeList, saveCurrentNode,
-                    currentNode,        currentNodeId;
+                    currentNode,        currentNodeId,          s4,
+                    guid,               presentABlankNode,      presentNodeData,
+                    isNewNode;
 
             frameworkAttributeList = [ "creationDate","revision", "uuid", "lastModifiedDate" ];
 
-            saveCurrentNode = function() {
+            configMap = {
+                textareaMinLines: 4
+            };
+
+            createNodeFromSchema = function ( schema ) {
+                var
+                        node_data_object,       p;
+
+                // set up from schema
+                node_data_object = {};
+                for ( p in schema ) {
+                    node_data_object[p] = schema[p].type
+                }
+                // add framework properties
+                node_data_object.uuid = guid();
+                node_data_object.revision = 1;
+                node_data_object.creationDate = new Date().toISOString();
+                node_data_object.lastModifiedDate = new Date().toISOString();
+                node_data_object.name = 'new ' + targetNodeLabel;
+
+                //format as though it came from /node/:id/navigate
+                return ( { data: node_data_object, inLInks: {}, outLinks: {} } );
+            };
+
+            s4 = function () {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                        .toString(16)
+                        .substring(1);
+            };
+
+            guid = function () {
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                        s4() + '-' + s4() + s4() + s4();
+            };
+
+            presentABlankNode = function() {
+                var blank_node;
+                blank_node = createNodeFromSchema ( targetSchema );
+                isNewNode = true;
+                presentNodeData( blank_node );
+            };
+
+            saveCurrentNode = function( ) {
                 var i,  browser_data,
                     browser_data_object = {};
 
-                alert( "Saving: "+currentNodeId );
                 browser_data = $( '.nodeBrowserData' );
                 for (i in browser_data ) {
                     browser_data_object[browser_data[i].id] = browser_data[i].value
@@ -38,11 +81,53 @@
                 for ( i in frameworkAttributeList ) {
                     browser_data_object[frameworkAttributeList[i]]=currentNode[frameworkAttributeList[i]]
                 }
-                alert( JSON.stringify(browser_data_object ))
+                // PUT if existing
+                if ( ! isNewNode ) {
+                    alert( "Saving: "+currentNodeId );
+                    //send the data back to the server
+                    ajax_request = $.ajax({
+
+                        url: '/neo4j/node/' + currentNodeId,
+                        type: 'put',
+                        headers: {Accept: 'application/json'},
+                        data: browser_data_object,
+
+                        // TODO interpret status code
+                        success: function ( response_from_server, status_msg, ajax_response ) {
+                            alert( ajax_response.responseText + status_msg );
+                            isNewNode = false;
+                            currentNode.lastModifiedDate = response_from_server.lastModifiedDate;
+                            currentNode.revision = response_from_server.revision;
+                        },
+                        error: function( response_from_server, status, ajax_response ) {
+                            alert( "error " + response_from_server.status + ' ' + response_from_server.responseText )
+                        }
+                    });
+    //                alert( JSON.stringify( browser_data_object ))
+                }
+                else {
+                    alert ( "saving new " + targetNodeLabel )
+                    ajax_request = $.ajax({
+
+                        url: '/neo4j/node',
+                            type: 'post',
+                            headers: {Accept: 'application/json'},
+                    data: { label: targetNodeLabel, data: browser_data_object },
+
+                        // TODO interpret status code
+                    success: function ( response_from_server, status_msg, ajax_response ) {
+                        alert( ajax_response.responseText + status_msg );
+                        isNewNode = false;
+                        loadNodeNamesIntoList();
+                    },
+                    error: function( response_from_server, status, ajax_response ) {
+                        alert( "error " + response_from_server.status + ' ' + response_from_server.responseText )
+                    }})
+                }
             };
 
             loadNodeNamesIntoList = function () {
-                var $new_item
+                var $new_item;
 
                 if ($( '#nodeNames' ).length ) {
                     $( '#nodeNames' ).remove();
@@ -68,16 +153,17 @@
             }
 
             getNodes = function ( event ) {
-                var target_node_label = metaNodes[event.target.id].data.name;
+
+                targetNodeLabel = metaNodes[event.target.id].data.name;
 
                 targetSchema = {};
                 if ( metaNodes[event.target.id].data.hasOwnProperty( "schema" )) {
                     targetSchema = JSON.parse(metaNodes[event.target.id].data.schema)
                 }
-                $( '#nodesHeader').text( target_node_label );
+                $( '#nodesHeader').text( targetNodeLabel );
                 // request nodes by type
                 ajax_request = $.ajax({
-                    url: '/neo4j/nodes/label/' + target_node_label,
+                    url: '/neo4j/nodes/label/' + targetNodeLabel,
                     type: 'get',
                     headers: {Accept: 'application/json'},
                     success: function (data) {
@@ -91,7 +177,8 @@
             }
 
             presentNodeData = function ( node_data ) {
-                var $input_field,       html_stub,      field_size,
+                var $button,        $controls_section,          html_stub,
+                    field_size,     estimated_number_of_rows,
                     n, t, d,
                     display_order = [];
 
@@ -125,7 +212,9 @@
                             // switch to one of the html5 text input types
                             switch ( targetSchema[n].format ) {
                                 case "textarea": {
-                                    html_stub = html_stub + '<textarea class="nodeBrowserData" id="'+n+'" style="width: 95%">\n</textarea>\n';
+                                    estimated_number_of_rows = Math.max( node_data.data[n].split("\n").length, configMap.textareaMinLines );
+                                    html_stub = html_stub + '<textarea class="nodeBrowserData" id="'+n+
+                                            '" style="width: 95%; max-height: 250px" rows='+estimated_number_of_rows+'">\n</textarea>\n';
                                     break;
                                 }
                                 case "number": {
@@ -154,9 +243,14 @@
                     $( '#'+n ).val( node_data.data[n] );
                 }
                 $( '#detailsHeader').text( node_data.data['name'] );
+                $controls_section = $( '<div id="controls"></div>' );
+                $button = $( '<button id="new">New</button></div>' ).click( presentABlankNode );
+                $controls_section.append ( $button );
+                $button = $( '<button id="save">Save</button></div>' ).click( saveCurrentNode );
+                $controls_section.append ( $button );
+                $( "#nodeDetails").append( $controls_section ).append( '<hr>' );
 
                 // show relationships
-                $( "#nodeDetails").append( '<hr>' );
                 for ( n in node_data.outLinkDetails ) {
                     $( '#nodeDetails').append( '<p>'+n+'</p>' );
                     for ( k in node_data.outLinkDetails[n] ) {
@@ -169,6 +263,7 @@
                         $( '#nodeDetails').append( '<li>'+ node_data.inLinkDetails[n][k].endName+'</li>' )
                     }
                 }
+
                 return true;
             };
 
@@ -177,6 +272,7 @@
                     target_node_id = targetNodes[event.target.id].id[0],
                     node_data;
                 currentNodeId = target_node_id;
+                isNewNode = false;
                 ajax_request = $.ajax({
                     url: '/neo4j/node/' + target_node_id + '/navigate',
                     type: 'get',
@@ -217,8 +313,8 @@
             //
             initModule = function ($container) {
                 $container.find( "#inspect" ).click( function() {alert( "Hello" )} );
-                $container.find( '#save').click( saveCurrentNode );
 
+                isNewNode = false;
                 // request nodes by type
                 ajax_request = $.ajax({
                     url: '/neo4j/nodes/label/Meta',
@@ -259,7 +355,7 @@
                 </div><!-- /grid-a -->
             </div>
         </div>
-        <div id="controls"><button id="save">Save</button></div>
+
     </div>
 </body>
 </html>

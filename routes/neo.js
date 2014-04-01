@@ -1,3 +1,140 @@
+// TODO Remove DBROUTE in favour of configMap.testRoute
+
+var
+  configMap = {
+    testRoute : "http://localhost:7474/db/data/"
+  };
+
+exports.postNodeWithLabel = function (req, res) {
+  var
+    options,                    http_request,               original_request_object,
+    original_response_object,   respond_with,               response_body;
+
+  options = {
+    url:      configMap.testRoute + 'node',
+    method:   'POST',
+    headers:  { 'content-type': 'application/json'},
+    body:     JSON.stringify( req.body.data )
+  };
+
+  original_request_object = req;
+  original_response_object = res;
+  respond_with = {};
+
+  http_request = require ( 'request' );
+  http_request( options, function( error, results_from_neo4j ) {
+    var
+      options;
+
+
+    if ( ! error ) {
+      if ( results_from_neo4j.statusCode == 201 ) {
+        response_body = JSON.parse(results_from_neo4j.body)
+        respond_with["id"] = response_body.self.split('/').slice(-1)[0]
+        respond_with["label"] = original_request_object.body.label
+        //update label on noe44j
+        options = {
+          url:configMap.testRoute + 'node/' + respond_with['id'] + '/labels',
+          method:'POST',
+          headers:{ 'content-type': 'application/json' },
+          body: JSON.stringify( respond_with["label"] )
+        };
+        http_request = require ( 'request' )
+        http_request( options, function( error, results_from_neo4j ) {
+          if( ! error ) {
+            if (results_from_neo4j.statusCode == 204 ) {
+              original_response_object.json( 201, respond_with )
+            }
+            else {
+              original_response_object.json( 400, { "msg":"label creation error" })
+            }
+          }
+          else {
+            original_response_object.json( 500, { "msg":"server error" })
+
+          }
+        })
+     }
+      else {
+        original_response_object.json( 400, {"msg":"problem saving " + original_request_object.body.label })
+      }
+    }
+    else {
+      original_response_object.json(500, { "msg":"server error" })
+    }
+  })
+
+
+};
+
+exports.putNodeById = function( req,res ) {
+  var
+    is_ok_to_save,        original_data,              update_node_properties,
+    originalRequest,      browserResponseObject,
+
+    options = {
+      url:      configMap.testRoute + 'node/' + req.params.id,
+      method:   'GET',
+      headers:  { 'content-type': 'application/json'}
+    },
+    http_request = require( 'request' );
+
+  update_node_properties = function() {
+    var
+      options,
+      http_request = require( 'request' );
+
+    originalRequest.body.revision = parseInt(originalRequest.body.revision) + 1;
+    originalRequest.body.lastModifiedDate = new Date().toISOString();
+
+    //put to neo4j
+    options = {
+      url:      configMap.testRoute + 'node/' + req.params.id + '/properties',
+      method:   'PUT',
+      headers:  { 'content-type': 'application/json'},
+      body:     JSON.stringify( originalRequest.body )
+    }
+    http_request ( options, function(error, result_from_neo4j ) {
+    if ( !error ) {
+      if ( result_from_neo4j.statusCode == 204 ) {
+        browserResponseObject.json(200, {"revision": originalRequest.body.revision,
+                                         "lastModifiedDate": originalRequest.body.lastModifiedDate })
+      }
+      else {
+        console.log("!OK "+result_from_neo4j.statusCode+":"+options.url+":Neo4j results="+result_from_neo4j.body)
+        browserResponseObject.json(500, {"msg":"Server error"});
+      }}})
+  };
+
+  originalRequest = req;
+  browserResponseObject = res;
+  console.log( "put node by id " + req.params.id );
+  // TODO Wrap the concurrency in a tx
+
+  //get the current node from the database
+  http_request( options, function( error, result_from_neo4j ) {
+    var
+      options,
+      http_request = require ( 'request' );
+
+    original_data = JSON.parse(result_from_neo4j.body).data;
+
+    //check the revision and modified date
+    is_ok_to_save = (( original_data.revision == originalRequest.body.revision) &&
+                    ( original_data.lastModifiedDate == originalRequest.body.lastModifiedDate ))
+
+    //if equal update revision market and modifide date
+    if( is_ok_to_save ) {
+      update_node_properties()
+    }
+    else {
+
+      // Concurrency error
+      browserResponseObject.json(409, {"msg":"Concurrency conflict"} );
+    }
+  });
+};
+
 exports.getNodesByLabel = function(req,res) {
     console.log('get type by id');
     neo4jGetNodesByLabel(req,res);
@@ -27,8 +164,8 @@ exports.getNodesByLabel = function(req,res) {
                 }  // end HTTP 200
                 default: {
                     console.log("!OK  "+response.statusCode+":"+options.url+":Neo4j results="+body)
-                    res.status(404)
-                    res.render('error.jade',data={title:"Not found",msg:body})
+                    res.status(404);
+                    res.render('error.jade',data={title:"Not found",msg:body});
                     break
                 }
             }
@@ -63,7 +200,7 @@ exports.getNodesByLabel = function(req,res) {
 //              passToBrowser(res,req.params.docbase,results)
         }
     }
-}
+};
 
 
 exports.getNodeById = function(req,res) {
