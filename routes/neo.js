@@ -5,6 +5,65 @@ var
     testRoute : "http://localhost:7474/db/data/"
   };
 
+exports.deleteNodeById = function ( req, res ) {
+  var
+    original_request_object,    original_response_object,     http_request,
+    cypher,                     options;
+
+  original_request_object = req;
+  original_response_object = res;
+
+  // Make the node an orphan by deleting its relationships
+  cypher = {
+    "query": "match (n)<-[r]->(m) where id(n) = {id} delete r",
+    "params": { "id": eval( original_request_object.params.id ) }
+  };
+  options = {
+    url:      configMap.testRoute + 'cypher',
+    method:   'POST',
+    headers:  { 'content-type': 'application/json'},
+    body:     JSON.stringify( cypher)
+  };
+  http_request = require( 'request' );
+  http_request( options, function( error, results_from_neo4j ) {
+    var
+      http_request,     options;
+    if ( !error ) {
+      if ( results_from_neo4j.statusCode == 200 ) {
+        options = {
+          url:      configMap.testRoute + 'node/' + req.params.id,
+          method:   'DELETE',
+          headers:  { 'content-type': 'application/json'}
+        };
+        // by the node is orphaned and can be deleted
+        http_request = require ( 'request' );
+        http_request( options, function( error, results_from_neo4j ) {
+          if (!error ) {
+            if ( results_from_neo4j.statusCode == 204 ) {
+              original_response_object.json (200, {"msg": "Deleted" })
+            }
+            else {
+              original_response_object.json( results_from_neo4j.statusCode, { "msg": JSON.parse(results_from_neo4j.body).message })
+            }
+          }
+          else {
+            original_response_object.json(500, { "msg":"server error" })
+          }
+        });
+      }
+      else {
+        original_response_object.json( results_from_neo4j.statusCode, { "msg": JSON.parse(results_from_neo4j.body).message })
+      }
+    }
+    else {
+      original_response_object.json(500, { "msg":"server error" })
+    }
+  });
+
+  // Delete the orphaned node
+
+};
+
 exports.postNodeWithLabel = function (req, res) {
   var
     options,                    http_request,               original_request_object,
@@ -23,15 +82,12 @@ exports.postNodeWithLabel = function (req, res) {
 
   http_request = require ( 'request' );
   http_request( options, function( error, results_from_neo4j ) {
-    var
-      options;
-
-
     if ( ! error ) {
       if ( results_from_neo4j.statusCode == 201 ) {
         response_body = JSON.parse(results_from_neo4j.body)
         respond_with["id"] = response_body.self.split('/').slice(-1)[0]
         respond_with["label"] = original_request_object.body.label
+        respond_with["name"] = original_request_object.body.data.name
         //update label on noe44j
         options = {
           url:configMap.testRoute + 'node/' + respond_with['id'] + '/labels',
@@ -97,7 +153,8 @@ exports.putNodeById = function( req,res ) {
     http_request ( options, function(error, result_from_neo4j ) {
     if ( !error ) {
       if ( result_from_neo4j.statusCode == 204 ) {
-        browserResponseObject.json(200, {"revision": originalRequest.body.revision,
+        browserResponseObject.json(200, {"name":originalRequest.body.name,
+                                         "revision": originalRequest.body.revision,
                                          "lastModifiedDate": originalRequest.body.lastModifiedDate })
       }
       else {
@@ -341,8 +398,10 @@ exports.getNodeByIdWithNavigation = function(req,res) {
     }
     function processOutLinks(req) {  //process out links
         var DBROUTE="http://localhost:7474/db/data/cypher"
+      // todo need to return id(rr)
         cypher={
-            "query":"match (m)-[rr]->(n) where id(m)={id} return type(rr),labels(n),n.name,id(n)",
+// todo consider using labels for processing this cypher - currently using absolute positioning [n] below
+            "query":"match (m)-[rr]->(n) where id(m)={id} return type(rr),labels(n),n.name,id(n),id(rr)",
             "params":{
                 "id":eval(req.params.id)  //must be a number to be a valid neo4j id
             }
@@ -373,6 +432,7 @@ exports.getNodeByIdWithNavigation = function(req,res) {
                         }
                         console.log(links[n][3])
                         results[links[n][0]].push({
+                            "id": links[n][4],
                             "endType":links[n][1][0],  //type is represented by a label which in neo4j is an array
                             "endName":links[n][2],
                             "endId":links[n][3],
@@ -391,13 +451,15 @@ exports.getNodeByIdWithNavigation = function(req,res) {
         })
     }
     function processInLinks(returning) {  //process in links
-        var DBROUTE="http://localhost:7474/db/data/cypher"
+        var DBROUTE="http://localhost:7474/db/data/cypher";
+      // todo need to return id(rr)
         cypher={
-            "query":"match (m)<-[rr]-(n) where id(m)={id} return type(rr),labels(n),n.name,id(n)",
+// todo consider using labels for processing this cypher - currently using absolute positioning [n] below
+            "query":"match (m)<-[rr]-(n) where id(m)={id} return type(rr),labels(n),n.name,id(n),id(rr)",
             "params":{
                 "id":eval(req.params.id)  //must be a number to be a valid neo4j id
             }
-        }
+        };
         var results={}
         var options={
             url:DBROUTE,
@@ -424,6 +486,7 @@ exports.getNodeByIdWithNavigation = function(req,res) {
                         }
                         console.log(links[n][3])
                         results[links[n][0]].push({
+                            "id": links[n][4],
                             "endType":links[n][1][0],  //type is represented by a label which in neo4j is an array
                             "endName":links[n][2],
                             "endId":links[n][3],

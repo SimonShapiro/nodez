@@ -15,6 +15,8 @@
         //
         var spa = (function ($) {
 
+// todo incorporate relationship id into response from node/:id/navigate in neo
+
             var
             // Declare all other module scope variables
                     metaNodes,          configMap,              initModule,
@@ -23,12 +25,69 @@
                     targetSchema,       frameworkAttributeList, saveCurrentNode,
                     currentNode,        currentNodeId,          s4,
                     guid,               presentABlankNode,      presentNodeData,
-                    isNewNode;
+                    isNewNode,          setupBrowser,           metaNodesNameIndex,
+                    deleteNode,         deleteAdHocProperty,    addAdHocProperty;
 
             frameworkAttributeList = [ "creationDate","revision", "uuid", "lastModifiedDate" ];
 
             configMap = {
                 textareaMinLines: 4
+            };
+
+            metaNodes          = {};
+            metaNodesNameIndex = {};
+
+            newNode = function( event ) {
+                var
+                    target_node_id;
+                target_node_id = event.target.id.split('_')[1]
+                targetNodeLabel = metaNodes[target_node_id].data.name
+                isNewNode = true;
+                targetSchema = {};
+                if ( metaNodes[target_node_id].data.hasOwnProperty( "schema" )) {
+                    targetSchema = JSON.parse( metaNodes[target_node_id].data.schema )
+                }
+//                alert(target_node_id + metaNodes[target_node_id].data.name)
+                getNodes( null, targetNodeLabel, false );
+                presentABlankNode();
+            }
+
+            addAdHocProperty = function( event ) {
+                var
+                    new_ad_hoc_property;
+                new_ad_hoc_property = prompt( "Ad-hoc property name" );
+                if ( new_ad_hoc_property ) {
+                    currentNode.data[new_ad_hoc_property] = ""
+                    presentNodeData( currentNode );
+                }
+            };
+
+            deleteNode = function ( event ) {
+                var
+                    target_node_id,         ajax_request;
+                event.stopPropagation();
+                target_node_id = event.target.id.split("_")[1];
+                if (target_node_id == undefined ) {
+                    target_node_id = currentNodeId
+                }
+                if (confirm( "Warning! Deleting will delete the node and all its relationships.  Do you want to go ahead and delete node " + target_node_id + "?" )) {
+                    ajax_request = $.ajax({
+                        url: '/neo4j/node/' + target_node_id,
+                        type: 'delete',
+                        headers: {Accept: 'application/json'},
+
+                        // TODO interpret status code
+                        success: function ( response_from_server, status_msg, ajax_response ) {
+                            alert( ajax_response.responseText + status_msg );
+                            delete(targetNodes[target_node_id]);
+                            loadNodeNamesIntoList();
+                            $( '#nodeDetails').children().remove();
+                        },
+                        error: function( response_from_server, status, ajax_response ) {
+                            alert( "error " + response_from_server.status + ' ' + response_from_server.responseText )
+                        }
+                    })
+                }
             };
 
             createNodeFromSchema = function ( schema ) {
@@ -70,16 +129,16 @@
             };
 
             saveCurrentNode = function( ) {
-                var i,  browser_data,
+                var i,  browser_data,           response_object,
                     browser_data_object = {};
 
-                browser_data = $( '.nodeBrowserData' );
+                browser_data = $.find( '.nodeBrowserData' );
                 for (i in browser_data ) {
                     browser_data_object[browser_data[i].id] = browser_data[i].value
                 }
                 //add framework fields object
                 for ( i in frameworkAttributeList ) {
-                    browser_data_object[frameworkAttributeList[i]]=currentNode[frameworkAttributeList[i]]
+                    browser_data_object[frameworkAttributeList[i]]=currentNode.data[frameworkAttributeList[i]]
                 }
                 // PUT if existing
                 if ( ! isNewNode ) {
@@ -96,8 +155,14 @@
                         success: function ( response_from_server, status_msg, ajax_response ) {
                             alert( ajax_response.responseText + status_msg );
                             isNewNode = false;
-                            currentNode.lastModifiedDate = response_from_server.lastModifiedDate;
-                            currentNode.revision = response_from_server.revision;
+                            currentNode.data.lastModifiedDate = response_from_server.lastModifiedDate;
+                            currentNode.data.revision = response_from_server.revision;
+                            targetNodes[currentNodeId] = response_from_server.name;
+                            loadNodeNamesIntoList();
+                            // todo test conformance of schema and provide warning message
+                            if ( targetNodeLabel == "Meta" ) {
+                                metaNodes[currentNodeId].data.schema = browser_data_object.schema
+                            }
                         },
                         error: function( response_from_server, status, ajax_response ) {
                             alert( "error " + response_from_server.status + ' ' + response_from_server.responseText )
@@ -118,7 +183,11 @@
                     success: function ( response_from_server, status_msg, ajax_response ) {
                         alert( ajax_response.responseText + status_msg );
                         isNewNode = false;
+                        response_object = JSON.parse( ajax_response.responseText );
+                        currentNodeId = response_object.id;
+                        targetNodes[response_object.id] = response_object.name;
                         loadNodeNamesIntoList();
+//                        $( '#nodeDetails').children().remove();
                     },
                     error: function( response_from_server, status, ajax_response ) {
                         alert( "error " + response_from_server.status + ' ' + response_from_server.responseText )
@@ -126,19 +195,21 @@
                 }
             };
 
-            loadNodeNamesIntoList = function () {
+            loadNodeNamesIntoList = function ( ) {
                 var $new_item;
 
                 if ($( '#nodeNames' ).length ) {
                     $( '#nodeNames' ).remove();
-                    $( '#nodeDetails').children().remove();
                     $( '#detailsHeader').text( 'Details' );
                 }
                 $( '<ul/>', {id:'nodeNames', "data-role":'listview', "data-filter":"true"} ).appendTo( $( '#nodesList' ) );
                 $( '#nodeNames').filterable();
                 $( '#nodeNames').listview();
                 for (i in targetNodes) {
-                    $new_item = $ ( '<li class="line" ><a id="'+i+'" href="#">'+targetNodes[i].data.name+'</a></li>');
+                    $new_item = $ ( '<li class="line" ><a id="' + i + '" href="#">' + targetNodes[i] + '</a>' +
+//                            '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete' + i + '"></a>'     +
+                            '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete_' + i + '"></a>'     +
+                            '</li>');
                     /*
                      $( '<li/>', {text: data[i].data.name,
                      class:"line",
@@ -147,18 +218,26 @@
                      //        .mouseover( displayTemplate ).click( getNodeData )
                      //        .appendTo( $( '#lines' ) );
                      */
+                    $new_item.find( "#delete_" + i ).click( deleteNode );
                     $new_item.click( showNodeData ).appendTo( $( '#nodeNames' ));
                 }
                 $( '#nodeNames').listview('refresh')
             }
 
-            getNodes = function ( event ) {
+            getNodes = function ( event, node_label, clean_details_bool ) {
+                var
+                        n,
+                     temp_target_nodes = {}   ;
 
-                targetNodeLabel = metaNodes[event.target.id].data.name;
-
+                if ( event ) {
+                    targetNodeLabel = metaNodes[event.target.id].data.name;
+                }
+                else {
+                    targetNodeLabel = node_label
+                }
                 targetSchema = {};
-                if ( metaNodes[event.target.id].data.hasOwnProperty( "schema" )) {
-                    targetSchema = JSON.parse(metaNodes[event.target.id].data.schema)
+                if ( metaNodes[metaNodesNameIndex[targetNodeLabel]].data.hasOwnProperty( "schema" )) {
+                    targetSchema = JSON.parse(metaNodes[metaNodesNameIndex[targetNodeLabel]].data.schema)
                 }
                 $( '#nodesHeader').text( targetNodeLabel );
                 // request nodes by type
@@ -167,36 +246,82 @@
                     type: 'get',
                     headers: {Accept: 'application/json'},
                     success: function (data) {
-                        targetNodes = data
+                        targetNodes = {}
+                        for ( n in data ) {
+                           targetNodes[data[n].id[0]] = data[n].data.name
+                        }
                         loadNodeNamesIntoList()
+                        if ( clean_details_bool ) {
+                            $( '#nodeDetails').children().remove();
+                        }
                     },
                     error: function (data) {
                         alert('error ', data['responseText'])
                     }
                 });
+            };
+
+            onClix = function( event ) {
+                var event_data;
+                event.stopPropagation();
+                event_data=event.target.id.split('_');
+                getNodes( null, event_data[1], true )
+                setupBrowser(event_data[1], event_data[0] )
             }
+
+            deleteAdHocProperty = function ( event ) {
+                var
+                    ad_hoc_property,            temp_node;
+
+
+                // make a deep copy of currentNode excluding the deleted ad_hoc_property
+                temp_node = currentNode;
+                ad_hoc_property = event.target.id.split( '_').slice(-1);
+                alert( 'hello ' + ad_hoc_property + ' on ' + currentNodeId );
+ //               for ( p in currentNode ) {
+ //                   if ( !(p == ad_hoc_property)) { temp_node[p] = currentNode.data[p] }
+ //               }
+                delete ( temp_node.data[ad_hoc_property] )
+                presentNodeData( temp_node );
+            };
 
             presentNodeData = function ( node_data ) {
                 var $button,        $controls_section,          html_stub,
                     field_size,     estimated_number_of_rows,
-                    n, t, d,
-                    display_order = [];
+                    n, t, d,        $new_item,                  display_order;
 
-                currentNode = node_data.data;
+                display_order = {"items":[],
+                                  "indexOf": function( property, value ) {
+                                      var ret = -1,     n
+                                      for ( n in this.items ) {
+                                          if (this.items[n][property] == value) {
+                                              ret = n
+                                          }
+                                      }
+                                      return ret
+                                  }};
+
 
                 $( '#nodeDetails').children().remove();
                 $( '#detailsHeader').text( 'Details' );
+
+                // targetSchema may contain items that are NOT in node_data
                 for (t in targetSchema) {
-                    display_order.push( t );
-                }
-                for ( n in node_data.data ) {
-                    // now display balance of non-framework attributes
-                    if ( ( display_order.indexOf( n ) == -1 ) && ( frameworkAttributeList.indexOf( n ) == -1 )) {
-                        display_order.push( n );
+                    display_order.items.push( {"name":t, "inSchema": true} );
+                    if ( !(node_data.data.hasOwnProperty( t ))) {
+                        node_data.data[t] = targetSchema[t].type   // todo when newNode has defaults we will need the default here as well
                     }
                 }
-                for ( d in display_order ) {
-                    n = display_order[d];
+
+                currentNode = node_data;
+                for ( n in node_data.data ) {
+                    // add balance of non-framework attributes to display order
+                    if ( ( display_order.indexOf( "name", n ) == -1 ) && ( frameworkAttributeList.indexOf( n ) == -1 )) {
+                        display_order.items.push( { "name":n, "inSchema": false} );
+                    }
+                }
+                for ( d in display_order.items ) {
+                    n = display_order.items[d].name;
                     if ( node_data.data[n].hasOwnProperty( "length" )) {
                         field_size = Math.min( node_data.data[n].length,60 );
                     }
@@ -238,9 +363,16 @@
                     else {
                         html_stub = html_stub + '<input type="text" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n'
                     }
+                    if ( ! display_order.items[d].inSchema ) {
+//                        alert("ad-hoc property" )
+                        html_stub = html_stub + '<button id="del_ad_hoc_property_'+n+'">-</button>'
+                    }
                     html_stub = html_stub + '</div>';
                     $( '#nodeDetails' ).append( $( html_stub)).css( "padding-left", "20px");
                     $( '#'+n ).val( node_data.data[n] );
+                    if ( ! display_order.items[d].inSchema ) {
+                        $( '#del_ad_hoc_property_'+n).click ( deleteAdHocProperty )
+                    }
                 }
                 $( '#detailsHeader').text( node_data.data['name'] );
                 $controls_section = $( '<div id="controls"></div>' );
@@ -248,29 +380,57 @@
                 $controls_section.append ( $button );
                 $button = $( '<button id="save">Save</button></div>' ).click( saveCurrentNode );
                 $controls_section.append ( $button );
+                $button = $( '<button id="delete">Delete</button></div>' ).click( deleteNode );
+                $controls_section.append ( $button );
+                $button = $( '<button id="addAdHocProperty">+ Ad-hoc</button></div>' ).click( addAdHocProperty );
+                $controls_section.append ( $button );
                 $( "#nodeDetails").append( $controls_section ).append( '<hr>' );
 
                 // show relationships
                 for ( n in node_data.outLinkDetails ) {
                     $( '#nodeDetails').append( '<p>'+n+'</p>' );
+                    $( '<ul/>', {id: n, "data-role":'listview', "data-filter":"true"} ).appendTo( $( '#nodeDetails' ) );
+                    $( '#' + n ).listview();
                     for ( k in node_data.outLinkDetails[n] ) {
-                        $( '#nodeDetails').append( '<li>'+ node_data.outLinkDetails[n][k].endName+'</li>')
+                        html_stub = '<li class="outLink" ><a id="'+node_data.outLinkDetails[n][k].endId+'_'+node_data.outLinkDetails[n][k].endType+ '">' +
+                            //'+node_data.outLinkDetails[n][k].endType +'
+                                node_data.outLinkDetails[n][k].endName + ' ('  +
+                                node_data.outLinkDetails[n][k].endType + ' ) ' +
+                                '</a></li>';
+                        $new_item = $ ( html_stub );
+                        $new_item.click( onClix ).appendTo( $( '#' + n ));
                     }
                 }
                 for ( n in node_data.inLinkDetails ) {
-                    $( '#nodeDetails').append( '<p>Inverse of '+n+'</p>' );
+                    $( '#nodeDetails').append( '<p>inverse of '+n+'</p>' );
+                    $( '<ul/>', {id: 'inverse' + n, "data-role":'listview', "data-filter":"true"} ).appendTo( $( '#nodeDetails' ) );
+                    $( '#inverse' + n ).listview();
                     for ( k in node_data.inLinkDetails[n] ) {
-                        $( '#nodeDetails').append( '<li>'+ node_data.inLinkDetails[n][k].endName+'</li>' )
+                        html_stub = '<li class="inLink" ><a id="'+node_data.inLinkDetails[n][k].endId+'_'+node_data.inLinkDetails[n][k].endType+ '">' +
+                            //'+node_data.inLinkDetails[n][k].endType +'
+                                node_data.inLinkDetails[n][k].endName + ' ('  +
+                                node_data.inLinkDetails[n][k].endType + ' ) ' +
+                                '</a></li>';
+                        $new_item = $ ( html_stub );
+                        $new_item.click( onClix ).appendTo( $( '#inverse' + n ));
                     }
                 }
 
                 return true;
             };
 
-            showNodeData = function ( event ) {
-                var target_node_data = targetNodes[event.target.id].data,
-                    target_node_id = targetNodes[event.target.id].id[0],
-                    node_data;
+            // get node data from neo4j - either via an event or  direct query based on node_id
+            showNodeData = function ( event, node_id ) {
+                var
+                    target_node_id,         node_data;
+
+                if (event) {
+                    target_node_id = event.target.id
+                }
+                else {
+                    target_node_id = node_id
+                }
+
                 currentNodeId = target_node_id;
                 isNewNode = false;
                 ajax_request = $.ajax({
@@ -290,12 +450,14 @@
             // Process Meta nodes /processMetaNodes/
             // receives Meta data and places into their containers and attaches them
             // to the DOM
-            processMetaNodes = function (data ) {
-                var $new_item;
-                $( '<ul/>', {id:'lines', "data-role":'listview', "data-filter":"true"} ).appendTo( $( '#Meta' ) );
+            processMetaNodes = function () {
+                var $new_item,          i;
+                $( '<ul/>', {id:'lines', "data-role":'listview', "data-filter":"true" } ).appendTo( $( '#Meta' ) );
                 $( '#lines').listview();
-                for (i in data) {
-                    $new_item = $ ( '<li class="line" ><a id="'+i+'" href="#">'+data[i].data.name+'</a></li>');
+                for (i in metaNodes ) {
+                    $new_item = $ ( '<li class="line" ><a id="'+i+'" href="">'+metaNodes[i].data.name+'</a>'  +
+                            '<a data-role="button" data-icon="star" data-iconpos="notext" id="new_' + i + '"></a>'               +
+                            '</li>');
                     /*
                     $( '<li/>', {text: data[i].data.name,
                         class:"line",
@@ -305,8 +467,18 @@
                     //        .appendTo( $( '#lines' ) );
                      */
                     $new_item.click( getNodes ).appendTo( $( '#lines' ));
+                    $new_item.find ("#new_" + i ).click( newNode );
                 }
                 $( '#lines').listview('refresh');
+            };
+            // setup the node browser from label and node id
+            //
+            setupBrowser = function ( label, node_id ) {
+                targetSchema = {}
+                if ( metaNodes[ metaNodesNameIndex[ label ]].data.hasOwnProperty( "schema" )) {
+                    targetSchema = JSON.parse( metaNodes[ metaNodesNameIndex[ label ]].data.schema )
+                }
+                showNodeData( null, node_id )
             };
             // Public method /initModule/
             // sets initial state and provides feature
@@ -321,8 +493,13 @@
                     type: 'get',
                     headers: {Accept: 'application/json'},
                     success: function (data) {
-                        metaNodes = data;
-                        processMetaNodes(data)},
+                        var
+                            n;
+                        for ( n in data ) {
+                            metaNodes[data[n].id[0]] = data[n];
+                            metaNodesNameIndex[data[n].data.name] = data[n].id[0]
+                        }
+                        processMetaNodes()},
                     error: function (data) {
                         alert('error ', data['responseText'])
                     }
@@ -346,11 +523,11 @@
 <body>
     <div data-role="page" id="spa">
         <div class="ui-grid-c">
-            <div class="ui-block-a" style="width: 20%" id="Meta"><div class="ui-bar ui-bar-a" style="height:15px">Meta</div>
+            <div class="ui-block-a" style="width: 20%" id="Meta"><div id="metaHeader" class="ui-bar ui-bar-a" style="height:15px">Meta</div>
             </div>
             <div class="ui-block-b" style="width: 20%" id="nodesList"><div id="nodesHeader" class="ui-bar ui-bar-a" style="height:15px"></div>
             </div>
-            <div class="ui-block-c" style="width: 60%"><div id="detailsHeader" class="ui-bar ui-bar-a" style="height:15px">Details</div>
+            <div class="ui-block-c" style="width: 60%" id="detailsPanel"><div id="detailsHeader" class="ui-bar ui-bar-a" style="height:15px">Details</div>
                 <div id="nodeDetails">
                 </div><!-- /grid-a -->
             </div>

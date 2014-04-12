@@ -77,6 +77,7 @@ app.get('/rule/newBasedOnWhenItem/:item/:operator/:value', rules.newRuleBasedOnW
 
 app.post('/schema/example', schema.generateExample);
 
+app.del('/neo4j/node/:id', neo.deleteNodeById);
 app.post('/neo4j/node', neo.postNodeWithLabel );
 app.get( '/neo4j/node/:id/verbose', neo.getNodeById );
 app.put( '/neo4j/node/:id', neo.putNodeById );
