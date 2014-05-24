@@ -11,6 +11,14 @@
     <script src="/javascripts/jquery-copy/jquery.mobile-1.4.2.js"></script>
     <script src="/javascripts/moustache/mustache.js"></script>
 
+    <script>
+        renderTemplate = function( id, data) {
+            var html_stub
+            html_stub = Mustache.render( $( '#' + id ).html(), data )
+            return html_stub
+        }
+    </script>
+
     <script type="moustache/x-tmpl" id="collapsible-template">
         <div data-role="collapsible-set" id="collapsible-container">
 
@@ -30,10 +38,107 @@
 
         </div>
     </script>
-    <script>
-        renderTemplate = function( id, data) {
-            return Mustache.render( $( id).html(), data )
-        }
+
+    <script type="mustache/x-tmpl" id="meta-node-template">
+        <ul id="lines" data-role="listview" data-filter="true">
+            {{#items}}
+                <li class="line">
+                    <a id="{{id}}" class="meta-list" href="">{{name}}</a>
+                    <a data-role="button" data-icon="star" data-iconpos="notext" class="meta-new" id="new_{{id}}"></a>
+                </li>
+            {{/items}}
+        </ul>
+    </script>
+
+    <script type="mustache/x-tmpl" id="node-list-template">
+        <ul id="nodeNames" data-role="listview" data-filter="true">
+            {{#items}}
+                <li class="line">
+                    <a id="{{id}}" class="node-list" href="">{{name}}</a>
+                    <a data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete" id="delete_{{id}}"></a>
+                </li>
+            {{/items}}
+        </ul>
+    </script>
+
+    <script type="mustache/x-tmpl" id="node-details-template">
+        <form>
+        {{#properties}}
+            <div class="ui-field-contain">
+            <label for="{{property_name}}">{{property_name}}:</label>
+            {{#format}}
+                {{#format.textarea}}
+                    <textarea class="nodeBrowserData" id="{{property_name}}" style="width: 95%; max-height: 250px" rows="{{format.textarea}}" value="{{value}}">{{value}}</textarea>
+                {{/format.textarea}}
+                {{^format.textarea}}
+                    {{#format.type}}
+                        <input type="{{format.type}}" class="nodeBrowserData" id="{{property_name}}" size="{{field_size}}" value="{{value}}">
+                        </input>
+                    {{/format.type}}
+                {{/format.textarea}}
+            {{/format}}
+            {{^format}}
+                <input type="text" class="nodeBrowserData" id="{{property_name}}" size="{{field_size}}"  value="{{value}}">
+                </input>
+            {{/format}}
+            {{#ad_hoc}}
+                <button id="del_ad_hoc_property_{{property_name}}" class="ad-hoc-property-delete-button">-</button>
+            {{/ad_hoc}}
+            </div>
+        {{/properties}}
+        <button id="new-node">New</button>
+        <button id="save-node">Save</button>
+        <button id="delete-node">Delete</button>
+        <button id="add-ad-hoc-property">+ Ad-hoc</button>
+        </form>
+
+        <hr>
+
+        <div class="ui-collapsible-set" data-role="collapsible-set" id="collapsible-container">
+
+            <div class="ui-collapsible" data-role="collapsible">
+                <h2>Relationships</h2>
+                Use this relationship editor to add and delete relatioships to the current node.
+                <div class="ui-collapsible" data-role="collapsible">
+                    <h2>Add a New Relationship</h2>
+                </div>
+                <div class="ui-collapsible" data-role="collapsible">
+                    <h2>Outbound Relationships</h2>
+                    <ul class="outbound-list" id="Outbound Relationships" data-role="listview">
+                    {{#outLinks}}
+                        <li class="outlink-divider" data-role="list-divider"><a>{{relationshipName}}</a></li>
+                        {{#relationships}}
+                            <li class="outLink" >
+                                <a id="{{endId}}_{{endType}}" class="browse-relationship">
+                                    {{endName}} ( {{endType}} )
+                                </a>
+                                <a class="delete-relationship" data-role="button" data-icon="delete" data-iconpos="notext" id="delete_rel_{{id}}"></a>
+                            </li>
+                        {{/relationships}}
+                    {{/outLinks}}
+                    </ul>
+                </div>
+                <div class="ui-collapsible" data-role="collapsible">
+                    <h2>Inbound Relationships</h2>
+                    <ul class="inbound-list" id="Inbound Relationships" data-role="listview">
+                    {{#inLinks}}
+                        <li class="inlink-divider" data-role="list-divider"><a>{{relationshipName}}</a></li>
+                        {{#relationships}}
+                            <li class="inLink" >
+                                <a id="{{endId}}_{{endType}}" class="browse-relationship">
+                                    {{endName}} ( {{endType}} )
+                                </a>
+                                <a class="delete-relationship" data-role="button" data-icon="delete" data-iconpos="notext" id="delete_rel_{{id}}"></a>
+                            </li>
+                        {{/relationships}}
+                    {{/inLinks}}
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+
     </script>
 
     <script>
@@ -137,7 +242,7 @@
                 }
                 // add framework properties
                 node_data_object.uuid = guid();
-                node_data_object.revision = 1;
+                node_data_object.revision = 0;
                 node_data_object.creationDate = new Date().toISOString();
                 node_data_object.lastModifiedDate = new Date().toISOString();
                 node_data_object.name = 'new ' + targetNodeLabel;
@@ -232,31 +337,24 @@
             };
 
             loadNodeNamesIntoList = function ( ) {
-                var $new_item;
+                var i,          html_stub,          data,
+                        $new_item;
+
+                data = {items:[]}
 
                 if ($( '#nodeNames' ).length ) {
                     $( '#nodeNames' ).remove();
                     $( '#detailsHeader').text( 'Details' );
                 }
-                $( '<ul/>', {id:'nodeNames', "data-role":'listview', "data-filter":"true"} ).appendTo( $( '#nodesList' ) );
-                $( '#nodeNames').filterable();
-                $( '#nodeNames').listview();
                 for (i in targetNodes) {
-                    $new_item = $ ( '<li class="line" ><a id="' + i + '" href="#">' + targetNodes[i] + '</a>' +
-//                            '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete' + i + '"></a>'     +
-                            '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete_' + i + '"></a>'     +
-                            '</li>');
-                    /*
-                     $( '<li/>', {text: data[i].data.name,
-                     class:"line",
-                     id: i
-                     }).click( getNodeData ).appendTo( $( '#lines') );
-                     //        .mouseover( displayTemplate ).click( getNodeData )
-                     //        .appendTo( $( '#lines' ) );
-                     */
-                    $new_item.find( "#delete_" + i ).click( deleteNode );
-                    $new_item.click( showNodeData ).appendTo( $( '#nodeNames' ));
+                    data["items"].push( { "id": i, "name": targetNodes[i] } )
                 }
+                html_stub = renderTemplate( "node-list-template", data)
+                $( "#nodesList").append( $( html_stub ))
+                $( '#nodeNames').filterable();
+                $( '.node-list' ).click( showNodeData )
+                $( '.node-delete' ).click( deleteNode )
+                $( '#nodeNames').listview();
                 $( '#nodeNames').listview('refresh')
             };
 
@@ -358,7 +456,10 @@
             presentNodeData = function ( node_data ) {
                 var $button,        $controls_section,          html_stub,
                     field_size,     estimated_number_of_rows,
-                    n, t, d,        $new_item,                  display_order;
+                    n, t, d,        $new_item,                  display_order,
+                    data,           property_collector,         relationship_type_index;
+
+                data = {"properties":[]}
 
                 display_order = {"items":[],
                                   "indexOf": function( property, value ) {
@@ -370,7 +471,6 @@
                                       }
                                       return ret
                                   }};
-
 
                 $( '#nodeDetails').children().remove();
                 $( '#detailsHeader').text( 'Details' );
@@ -391,6 +491,7 @@
                     }
                 }
                 for ( d in display_order.items ) {
+                    property_collector = {}
                     n = display_order.items[d].name;
                     if ( node_data.data[n].hasOwnProperty( "length" )) {
                         field_size = Math.min( node_data.data[n].length,60 );
@@ -398,128 +499,90 @@
                     else {
                         field_size = 2;
                     }
-                    html_stub = '<div class="ui-field-contain">'
-                                +   '<label for="'+n+'">'+n+':</label>\n';
+                    property_collector.property_name = n;
+                    property_collector.field_size    = field_size;
 
                     // style the widget based on the format entry in the schema
                     if ( targetSchema[n] ) {
                         if ( targetSchema[n].hasOwnProperty("format") ) {
+                            property_collector.format = {}
                             // switch to one of the html5 text input types
-                            switch ( targetSchema[n].format ) {
-                                case "textarea": {
-                                    estimated_number_of_rows = Math.max( node_data.data[n].split("\n").length, configMap.textareaMinLines );
-                                    html_stub = html_stub + '<textarea class="nodeBrowserData" id="'+n+
-                                            '" style="width: 95%; max-height: 250px" rows='+estimated_number_of_rows+'">\n</textarea>\n';
-                                    break;
-                                }
-                                case "number": {
-                                    html_stub = html_stub + '<input type="number" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n';
-                                    break;
-                                }
-                                case "date": {
-                                    html_stub = html_stub + '<input type="date" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n';
-                                    break;
-                                }
-                                default: {
-                                    html_stub = html_stub + '<input type="text" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n';
-                                    break;
-                                }
-                            }
-                        }
-                        else {
-                            html_stub = html_stub + '<input type="text" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n'
+                            estimated_number_of_rows = Math.max( node_data.data[n].split("\n").length, configMap.textareaMinLines );
+                            property_collector.format[targetSchema[n].format] = estimated_number_of_rows;
+                            property_collector.format["type"] = targetSchema[n].format  // should not exist if type textarea
                         }
                     }
-                    else {
-                        html_stub = html_stub + '<input type="text" class="nodeBrowserData" id="'+n+'" size="'+field_size+'">\n'
-                    }
-                    if ( ! display_order.items[d].inSchema ) {
-//                        alert("ad-hoc property" )
-                        html_stub = html_stub + '<button id="del_ad_hoc_property_'+n+'">-</button>'
-                    }
-                    html_stub = html_stub + '</div>';
-                    $( '#nodeDetails' ).append( $( html_stub)).css( "padding-left", "20px");
 
-                    $( '#'+n ).val( node_data.data[n] );
                     if ( ! display_order.items[d].inSchema ) {
-                        $( '#del_ad_hoc_property_'+n).click ( deleteAdHocProperty )
+                        property_collector["ad_hoc"] = "true"
                     }
+
+                    property_collector["value"] = node_data.data[n];
+                    data.properties.push( property_collector )
                 }
-
-                $( '#detailsHeader').text( node_data.data['name'] );
-                $controls_section = $( '<div id="controls"></div>' );
-                $button = $( '<button id="new">New</button></div>' ).click( presentABlankNode );
-                $controls_section.append ( $button );
-                $button = $( '<button id="save">Save</button></div>' ).click( saveCurrentNode );
-                $controls_section.append ( $button );
-                $button = $( '<button id="delete">Delete</button></div>' ).click( deleteNode );
-                $controls_section.append ( $button );
-                $button = $( '<button id="addAdHocProperty">+ Ad-hoc</button></div>' ).click( addAdHocProperty );
-                $controls_section.append ( $button );
-                $button = $( '<button id="newPageTest">Rel Editor</button></div>' ).click( initRelationshipEditor );
-                $controls_section.append ( $button );
-                $( "#nodeDetails").append( $controls_section ).append( '<hr>' );
-
-
-                // testing templates
-                html_stub = renderTemplate( "#collapsible-template", {"title":"hello world"} )
-                $( "#nodeDetails").append( $( html_stub ))
-
-                // show relationships
-                $relationship_set = $( '<div id = "relationship set" data-role = "collapsible-set"></div>' );
-                $relationship_set.collapsible();
-//                $relationships.append( $( '<h3>Outbound Relationships</h3>' ))
 
                 // outlinks
+                data["outLinks"] = []
+                relationship_type_index = 0;
                 for ( n in node_data.outLinkDetails ) {
-                    $relationships = $( '<div data-role = "collapsible"></div>' )
-                    $relationships.collapsible();
-                    $relationships.append( '<h2>'+n+'</h2>' );
-                    $( '<ul/>', {id: n, "data-role":'listview', "data-filter":"true"} ).appendTo( $relationships );
-                    $( '#' + n ).listview();
+                    data.outLinks.push( {relationshipName:n, relationships:[]} )
                     for ( k in node_data.outLinkDetails[n] ) {
-                        html_stub = '<li class="outLink" >'+
-                                '<a id="'+node_data.outLinkDetails[n][k].endId+'_'+node_data.outLinkDetails[n][k].endType+ '">' +
-                            //'+node_data.outLinkDetails[n][k].endType +'
-                                node_data.outLinkDetails[n][k].endName + ' ('  +
-                                node_data.outLinkDetails[n][k].endType + ' ) ' +
-                                '</a>'                                         +
-                                '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete_rel_' + node_data.outLinkDetails[n][k].id + '"></a>'     +
-                                '</li>';
-                        $new_item = $ ( html_stub );
-                        $new_item.click( onClix ).appendTo( $relationships.find( '#' + n ));
-                        $new_item.find("#delete_rel_"+node_data.outLinkDetails[n][k].id).click( deleteRelationship )
+                        data.outLinks[relationship_type_index].relationships.push( node_data.outLinkDetails[n][k] )
                     }
-                    $( '#' + n ).listview( 'refresh' );
-                    $relationship_set.append( $relationships )
+                    relationship_type_index = relationship_type_index + 1;
                 }
 
-                // inlinks
-//                $relationships.append( $( '<h3>Inbound Relationships</h3>' ))
-                for ( n in node_data.inLinkDetails ) {
-                    $relationships = $( '<div data-role = collapsible"></div>' )
-                    $relationships.collapsible();
-                    $relationships.append( '<p>inverse of '+n+'</p>' );
-                    $( '<ul/>', {id: 'inverse' + n, "data-role":'listview', "data-filter":"true"} ).appendTo( $relationships );
-                    $( '#inverse' + n ).listview();
-                    for ( k in node_data.inLinkDetails[n] ) {
-                        html_stub = '<li class="inLink" ><a id="'+node_data.inLinkDetails[n][k].endId+'_'+node_data.inLinkDetails[n][k].endType+ '">' +
-                            //'+node_data.inLinkDetails[n][k].endType +'
-                                node_data.inLinkDetails[n][k].endName + ' ('  +
-                                node_data.inLinkDetails[n][k].endType + ' ) ' +
-                                '</a>'                                        +
-                                '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete_rel_' + node_data.inLinkDetails[n][k].id + '"></a>'     +
-                                '</li>';
-                        $new_item = $ ( html_stub );
-                        $new_item.click( onClix ).appendTo( $relationships.find( '#inverse' + n ));
-                        $new_item.find("#delete_rel_"+node_data.inLinkDetails[n][k].id).click( deleteRelationship )
-                    }
-                    $( '#inverse' + n ).listview( 'refresh' );
-                    $relationship_set.append( $relationships )
-                }
-                $( '#spa2').append( $relationship_set )
-                $( '#spa2' ).find( "#relationship set").collapsibleset( "refresh" )
+                html_stub = renderTemplate( "node-details-template", data)
 
+                // can set the event based pointers after the render and append
+                $( '#nodeDetails' ).append( $( html_stub)).css( "padding-left", "20px");
+                $( '.ad-hoc-property-delete-button').click( deleteAdHocProperty );
+                $( '#new-node' ).click( presentABlankNode );
+                $( '#save-node' ).click( saveCurrentNode );
+                $( '#delete-node' ).click( deleteNode );
+                $( '#add-ad-hoc-property' ).click( addAdHocProperty );
+                $( '#collapsible-container').trigger( "create" );
+                $( '.outbound-list').listview();
+                $( '.delete-relationship').click( deleteRelationship );
+                $( '.browse-relationship').click( onClix );
+/*
+                $new_item.click( onClix ).appendTo( $relationships.find( '#' + n ));
+                $new_item.find("#delete_rel_"+node_data.outLinkDetails[n][k].id).click( deleteRelationship )
+*/
+
+                /*
+                                // show relationships
+                                $relationship_set = $( '<div id = "relationship set" data-role = "collapsible-set"></div>' );
+                                $relationship_set.collapsible();
+                //                $relationships.append( $( '<h3>Outbound Relationships</h3>' ))
+
+
+                                // inlinks
+                //                $relationships.append( $( '<h3>Inbound Relationships</h3>' ))
+                                for ( n in node_data.inLinkDetails ) {
+                                    $relationships = $( '<div data-role = collapsible"></div>' )
+                                    $relationships.collapsible();
+                                    $relationships.append( '<p>inverse of '+n+'</p>' );
+                                    $( '<ul/>', {id: 'inverse' + n, "data-role":'listview', "data-filter":"true"} ).appendTo( $relationships );
+                                    $( '#inverse' + n ).listview();
+                                    for ( k in node_data.inLinkDetails[n] ) {
+                                        html_stub = '<li class="inLink" ><a id="'+node_data.inLinkDetails[n][k].endId+'_'+node_data.inLinkDetails[n][k].endType+ '">' +
+                                            //'+node_data.inLinkDetails[n][k].endType +'
+                                                node_data.inLinkDetails[n][k].endName + ' ('  +
+                                                node_data.inLinkDetails[n][k].endType + ' ) ' +
+                                                '</a>'                                        +
+                                                '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete_rel_' + node_data.inLinkDetails[n][k].id + '"></a>'     +
+                                                '</li>';
+                                        $new_item = $ ( html_stub );
+                                        $new_item.click( onClix ).appendTo( $relationships.find( '#inverse' + n ));
+                                        $new_item.find("#delete_rel_"+node_data.inLinkDetails[n][k].id).click( deleteRelationship )
+                                    }
+                                    $( '#inverse' + n ).listview( 'refresh' );
+                                    $relationship_set.append( $relationships )
+                                }
+                                $( '#spa2').append( $relationship_set )
+                                $( '#spa2' ).find( "#relationship set").collapsibleset( "refresh" )
+                */
                 return true;
             };
 
@@ -559,25 +622,18 @@
             // receives Meta data and places into their containers and attaches them
             // to the DOM
             processMetaNodes = function () {
-                var $new_item,          i;
-                $( '<ul/>', {id:'lines', "data-role":'listview', "data-filter":"true" } ).appendTo( $( '#Meta' ) );
-                $( '#lines').listview();
+                var data,       i,          html_stub;
+
+                data = {}
+                data["items"] = [];
                 for (i in metaNodes ) {
-                    $new_item = $ ( '<li class="line" ><a id="'+i+'" href="">'+metaNodes[i].data.name+'</a>'  +
-                            '<a data-role="button" data-icon="star" data-iconpos="notext" id="new_' + i + '"></a>'               +
-                            '</li>');
-                    /*
-                    $( '<li/>', {text: data[i].data.name,
-                        class:"line",
-                        id: i
-                    }).click( getNodeData ).appendTo( $( '#lines') );
-                    //        .mouseover( displayTemplate ).click( getNodeData )
-                    //        .appendTo( $( '#lines' ) );
-                     */
-                    $new_item.click( getNodes ).appendTo( $( '#lines' ));
-                    $new_item.find ("#new_" + i ).click( newNode );
+                    data['items'].push( {id:i, name:metaNodes[i].data.name} )
                 }
-                $( '#lines').listview('refresh');
+                html_stub = renderTemplate ( "meta-node-template", data)
+                $( '#Meta').append( $( html_stub ))
+                $( '.meta-new').click( newNode )
+                $( '.meta-list').click( getNodes )
+                $( '#lines').listview();
             };
             // setup the node browser from label and node id
             //

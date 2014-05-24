@@ -1,0 +1,891 @@
+<base href="http://localhost:3000/hellomoustache.html">
+<meta charset="utf-8">
+<title>Page Template</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/javascripts/jquery-copy/jquery.mobile-1.4.2.css">
+<link rel="stylesheet" href="/javascripts/jquery-copy/jquery-ui.css">
+<script src="/javascripts/jquery-copy/jquery-1.10.2.js"></script>
+<script src="/javascripts/jquery-copy/jquery-ui.js"></script>
+<script src="/javascripts/jquery-copy/jquery.mobile-1.4.2.js"></script>
+<script src="/javascripts/moustache/mustache.js"></script>
+
+<script>
+    renderTemplate = function( id, data) {
+        var html_stub
+        html_stub = Mustache.render( $( '#' + id ).html(), data )
+        return html_stub
+    }
+</script>
+
+<script type="moustache/x-tmpl" id="collapsible-template">
+        <div data-role="collapsible-set" id="collapsible-container">
+
+            <div data-role="collapsible">
+                <h2>{{title}}</h2>
+                <p>
+                This is an example of rendered html in a collapsible unit
+                </p>
+            </div>
+
+            <div data-role="collapsible">
+                <h2>{{title}}</h2>
+                <p>
+                This is a secondn example of rendered html in a collapsible unit
+                </p>
+            </div>
+
+        </div>
+    </script>
+
+<script type="mustache/x-tmpl" id="meta-node-template">
+        <ul id="lines" data-role="listview" data-filter="true">
+            {{#items}}
+                <li class="line">
+                    <a id="{{id}}" class="meta-list" href="">{{name}}</a>
+                    <a data-role="button" data-icon="star" data-iconpos="notext" class="meta-new" id="new_{{id}}"></a>
+                </li>
+            {{/items}}
+        </ul>
+    </script>
+
+<script type="mustache/x-tmpl" id="node-list-template">
+        <ul id="nodeNames" data-role="listview" data-filter="true">
+            {{#items}}
+                <li class="line">
+                    <a id="{{id}}" class="node-list" href="">{{name}}</a>
+                    <a data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete" id="delete_{{id}}"></a>
+                </li>
+            {{/items}}
+        </ul>
+    </script>
+
+<script type="mustache/x-tmpl" id="node-details-template">
+        <form>
+        {{#properties}}
+            <div class="ui-field-contain">
+            <label for="{{property_name}}">{{property_name}}:</label>
+            {{#format}}
+                {{#format.textarea}}
+                    <textarea class="nodeBrowserData" id="{{property_name}}" style="width: 95%; max-height: 250px" rows="{{format.textarea}}" value="{{value}}">
+                    </textarea>
+                {{/format.textarea}}
+                {{^format.textarea}}
+                    {{#format.type}}
+                        <input type="{{format.type}}" class="nodeBrowserData" id="{{property_name}}" size="{{field_size}}" value="{{value}}">
+                        </input>
+                    {{/format.type}}
+                {{/format.textarea}}
+            {{/format}}
+            {{^format}}
+                <input type="text" class="nodeBrowserData" id="{{property_name}}" size="{{field_size}}"  value="{{value}}">
+                </input>
+            {{/format}}
+            {{#ad_hoc}}
+                <button id="del_ad_hoc_property_{{property_name}}" class="ad-hoc-property-delete-button">-</button>
+            {{/ad_hoc}}
+            </div>
+        {{/properties}}
+        <button id="new-node">New</button>
+        <button id="save-node">Save</button>
+        <button id="delete-node">Delete</button>
+        <button id="add-ad-hoc-property">+ Ad-hoc</button>
+        </form>
+
+        <hr>
+
+        <div class="ui-collapsible-set" data-role="collapsible-set" id="collapsible-container">
+
+            <div class="ui-collapsible" data-role="collapsible">
+                <h2>One</h2>
+                <p>
+                This is an example of rendered html in a collapsible unit
+                </p>
+            </div>
+
+            <div class="ui-collapsible" data-role="collapsible">
+                <h2>Two</h2>
+                <p>
+                This is a second example of rendered html in a collapsible unit
+                </p>
+            </div>
+
+        </div>
+
+    </script>
+
+<script>
+// Module /spa/
+// Provides chat slider capability
+//
+var spa = (function ($) {
+//  todo on saving a new meta node need to refresh the metanode list
+    var
+    // Declare all other module scope variables
+            metaNodes,          configMap,              initModule,
+            processMetaNodes,   createNodeFromSchema,   targetNodeLabel,
+            getNodes,           targetNodes,            loadNodeNamesIntoList,
+            targetSchema,       frameworkAttributeList, saveCurrentNode,
+            currentNode,        currentNodeId,          s4,
+            guid,               presentABlankNode,      presentNodeData,
+            isNewNode,          setupBrowser,           metaNodesNameIndex,
+            deleteNode,         deleteAdHocProperty,    addAdHocProperty,
+            initRelationshipEditor,                     getNodesViaCallBack,
+            deleteRelationship, getNodeDataViaCallBack;
+
+    frameworkAttributeList = [ "creationDate","revision", "uuid", "lastModifiedDate" ];
+
+    configMap = {
+        textareaMinLines: 4
+    };
+
+    metaNodes          = {};
+    metaNodesNameIndex = {};
+    targetSchema       = {};
+
+    newNode = function( event ) {
+        var
+                target_node_id;
+        target_node_id = event.target.id.split('_')[1]
+        targetNodeLabel = metaNodes[target_node_id].data.name
+        isNewNode = true;
+//                targetSchema = {};
+        if ( metaNodes[target_node_id].data.hasOwnProperty( "schema" )) {
+            targetSchema = JSON.parse( metaNodes[target_node_id].data.schema )
+        }
+//                alert(target_node_id + metaNodes[target_node_id].data.name)
+        getNodes( null, targetNodeLabel, false );
+        presentABlankNode();
+    };
+
+    deleteRelationship = function( event ) {
+        alert("Ready to delete relationship "+ event.target.id);
+        getNodeDataViaCallBack( currentNodeId, presentNodeData )
+//                showNodeData( null, currentNodeId )
+//                setupBrowser( targetNodeLabel, currentNodeId );
+    };
+
+    addAdHocProperty = function( event ) {
+        var
+                new_ad_hoc_property;
+        // todo when there are a greater variety of input types collect here for the new ad-hoc property
+        new_ad_hoc_property = prompt( "Ad-hoc property name" );
+        if ( new_ad_hoc_property ) {
+            currentNode.data[new_ad_hoc_property] = ""
+            presentNodeData( currentNode );
+        }
+    };
+
+    deleteNode = function ( event ) {
+        var
+                target_node_id,         ajax_request;
+        event.stopPropagation();
+        target_node_id = event.target.id.split("_")[1];
+        if (target_node_id == undefined ) {
+            target_node_id = currentNodeId
+        }
+        if (confirm( "Warning! Deleting will delete the node and all its relationships.  Do you want to go ahead and delete node " + target_node_id + "?" )) {
+            ajax_request = $.ajax({
+                url: '/neo4j/node/' + target_node_id,
+                type: 'delete',
+                headers: {Accept: 'application/json'},
+
+                // TODO interpret status code
+                success: function ( response_from_server, status_msg, ajax_response ) {
+                    alert( ajax_response.responseText + status_msg );
+                    delete(targetNodes[target_node_id]);
+                    loadNodeNamesIntoList();
+                    $( '#nodeDetails').children().remove();
+                },
+                error: function( response_from_server, status, ajax_response ) {
+                    alert( "error " + response_from_server.status + ' ' + response_from_server.responseText )
+                }
+            })
+        }
+    };
+
+    createNodeFromSchema = function ( schema ) {
+        var
+                node_data_object,       p;
+
+        // set up from schema
+        node_data_object = {};
+        for ( p in schema ) {
+            node_data_object[p] = schema[p].type
+        }
+        // add framework properties
+        node_data_object.uuid = guid();
+        node_data_object.revision = 1;
+        node_data_object.creationDate = new Date().toISOString();
+        node_data_object.lastModifiedDate = new Date().toISOString();
+        node_data_object.name = 'new ' + targetNodeLabel;
+
+        //format as though it came from /node/:id/navigate
+        return ( { data: node_data_object, inLInks: {}, outLinks: {} } );
+    };
+
+    s4 = function () {
+        return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+    };
+
+    guid = function () {
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4();
+    };
+
+    presentABlankNode = function() {
+        var blank_node;
+        blank_node = createNodeFromSchema ( targetSchema );
+        isNewNode = true;
+        presentNodeData( blank_node );
+    };
+
+    saveCurrentNode = function( ) {
+        var i,  browser_data,           response_object,
+                browser_data_object = {};
+
+        browser_data = $.find( '.nodeBrowserData' );
+        for (i in browser_data ) {
+            browser_data_object[browser_data[i].id] = browser_data[i].value
+        }
+        //add framework fields object
+        for ( i in frameworkAttributeList ) {
+            browser_data_object[frameworkAttributeList[i]]=currentNode.data[frameworkAttributeList[i]]
+        }
+        // PUT if existing
+        if ( ! isNewNode ) {
+            alert( "Saving: "+currentNodeId );
+            //send the data back to the server
+            ajax_request = $.ajax({
+
+                url: '/neo4j/node/' + currentNodeId,
+                type: 'put',
+                headers: {Accept: 'application/json'},
+                data: browser_data_object,
+
+                // TODO interpret status code
+                success: function ( response_from_server, status_msg, ajax_response ) {
+                    alert( ajax_response.responseText + status_msg );
+                    isNewNode = false;
+                    currentNode.data.lastModifiedDate = response_from_server.lastModifiedDate;
+                    currentNode.data.revision = response_from_server.revision;
+                    targetNodes[currentNodeId] = response_from_server.name;
+                    loadNodeNamesIntoList();
+                    // todo test conformance of schema and provide warning message
+                    if ( targetNodeLabel == "Meta" ) {
+                        metaNodes[currentNodeId].data.schema = browser_data_object.schema
+                    }
+                },
+                error: function( response_from_server, status, ajax_response ) {
+                    alert( "error " + response_from_server.status + ' ' + response_from_server.responseText )
+                }
+            });
+            //                alert( JSON.stringify( browser_data_object ))
+        }
+        else {
+            alert ( "saving new " + targetNodeLabel )
+            ajax_request = $.ajax({
+
+                url: '/neo4j/node',
+                type: 'post',
+                headers: {Accept: 'application/json'},
+                data: { label: targetNodeLabel, data: browser_data_object },
+
+                // TODO interpret status code
+                success: function ( response_from_server, status_msg, ajax_response ) {
+                    alert( ajax_response.responseText + status_msg );
+                    isNewNode = false;
+                    response_object = JSON.parse( ajax_response.responseText );
+                    currentNodeId = response_object.id;
+                    targetNodes[response_object.id] = response_object.name;
+                    loadNodeNamesIntoList();
+//                        $( '#nodeDetails').children().remove();
+                },
+                error: function( response_from_server, status, ajax_response ) {
+                    alert( "error " + response_from_server.status + ' ' + response_from_server.responseText )
+                }})
+        }
+    };
+
+    loadNodeNamesIntoList = function ( ) {
+        var i,          html_stub,          data,
+                $new_item;
+
+        data = {items:[]}
+
+        if ($( '#nodeNames' ).length ) {
+            $( '#nodeNames' ).remove();
+            $( '#detailsHeader').text( 'Details' );
+        }
+        for (i in targetNodes) {
+            data["items"].push( { "id": i, "name": targetNodes[i] } )
+        }
+        html_stub = renderTemplate( "node-list-template", data)
+        $( "#nodesList").append( $( html_stub ))
+        $( '#nodeNames').filterable();
+        $( '.node-list' ).click( showNodeData )
+        $( '.node-delete' ).click( deleteNode )
+        $( '#nodeNames').listview();
+        $( '#nodeNames').listview('refresh')
+    };
+
+    getNodeDataViaCallBack = function( node_id, _CB_) {
+        var
+                ajax_request;
+
+        ajax_request = $.ajax({
+            url: '/neo4j/node/' + node_id + '/navigate',
+            type: 'get',
+            headers: {Accept: 'application/json'},
+            success: function( data ) {
+                _CB_( data );
+            },
+            error: function (data) {
+                alert('error ', data['responseText'])
+            }
+        });
+    }
+
+    getNodesViaCallBack = function ( node_label, _CB_ ) {
+        var
+                ajax_request,     target_nodes;
+
+        ajax_request = $.ajax({
+            url: '/neo4j/nodes/label/' + node_label,
+            type: 'get',
+            headers: {Accept: 'application/json'},
+            success: function (data) {
+                target_nodes = {}
+                for ( n in data ) {
+                    target_nodes[data[n].id[0]] = data[n].data.name
+                }
+                _CB_( target_nodes )
+            },
+            error: function (data) {
+                alert('error ', data['responseText'])
+            }
+        });
+    };
+
+    getNodes = function ( event, node_label, clean_details_bool ) {
+        var
+                n,
+                temp_target_nodes = {}   ;
+
+        if ( event ) {
+            targetNodeLabel = metaNodes[event.target.id].data.name;
+        }
+        else {
+            targetNodeLabel = node_label
+        }
+//                targetSchema = {};
+        if ( metaNodes[metaNodesNameIndex[targetNodeLabel]].data.hasOwnProperty( "schema" )) {
+            targetSchema = JSON.parse(metaNodes[metaNodesNameIndex[targetNodeLabel]].data.schema)
+        }
+        $( '#nodesHeader').text( targetNodeLabel );
+        // request nodes by type
+        ajax_request = $.ajax({
+            url: '/neo4j/nodes/label/' + targetNodeLabel,
+            type: 'get',
+            headers: {Accept: 'application/json'},
+            success: function (data) {
+                targetNodes = {}
+                for ( n in data ) {
+                    targetNodes[data[n].id[0]] = data[n].data.name
+                }
+                loadNodeNamesIntoList()
+                if ( clean_details_bool ) {
+                    $( '#nodeDetails').children().remove();
+                }
+            },
+            error: function (data) {
+                alert('error ', data['responseText'])
+            }
+        });
+    };
+
+    onClix = function( event ) {
+        var event_data;
+        event.stopPropagation();
+        event_data=event.target.id.split('_');
+        getNodes( null, event_data[1], true );
+        setupBrowser(event_data[1], event_data[0] )
+    };
+
+    deleteAdHocProperty = function ( event ) {
+        var
+                ad_hoc_property,            temp_node;
+
+
+        // make a deep copy of currentNode excluding the deleted ad_hoc_property
+        temp_node = currentNode;
+        ad_hoc_property = event.target.id.split( '_').slice(-1);
+        delete ( temp_node.data[ad_hoc_property] );
+        presentNodeData( temp_node );
+    };
+
+    presentNodeData = function ( node_data ) {
+        var $button,        $controls_section,          html_stub,
+                field_size,     estimated_number_of_rows,
+                n, t, d,        $new_item,                  display_order,
+                data,           property_collector,         new_html;
+
+        data = {"properties":[]}
+
+        display_order = {"items":[],
+            "indexOf": function( property, value ) {
+                var ret = -1,     n
+                for ( n in this.items ) {
+                    if (this.items[n][property] == value) {
+                        ret = n
+                    }
+                }
+                return ret
+            }};
+
+        $( '#nodeDetails').children().remove();
+        $( '#detailsHeader').text( 'Details' );
+
+        // targetSchema may contain items that are NOT in node_data
+        for (t in targetSchema) {
+            display_order.items.push( {"name":t, "inSchema": true} );
+            if ( !(node_data.data.hasOwnProperty( t ))) {
+                node_data.data[t] = targetSchema[t].type   // todo when newNode has defaults we will need the default here as well
+            }
+        }
+
+        currentNode = node_data;
+        for ( n in node_data.data ) {
+            // add balance of non-framework attributes to display order
+            if ( ( display_order.indexOf( "name", n ) == -1 ) && ( frameworkAttributeList.indexOf( n ) == -1 )) {
+                display_order.items.push( { "name":n, "inSchema": false} );
+            }
+        }
+        for ( d in display_order.items ) {
+            property_collector = {}
+            n = display_order.items[d].name;
+            if ( node_data.data[n].hasOwnProperty( "length" )) {
+                field_size = Math.min( node_data.data[n].length,60 );
+            }
+            else {
+                field_size = 2;
+            }
+            property_collector.property_name = n;
+            property_collector.field_size    = field_size;
+
+            // style the widget based on the format entry in the schema
+            if ( targetSchema[n] ) {
+                if ( targetSchema[n].hasOwnProperty("format") ) {
+                    property_collector.format = {}
+                    // switch to one of the html5 text input types
+                    estimated_number_of_rows = Math.max( node_data.data[n].split("\n").length, configMap.textareaMinLines );
+                    property_collector.format[targetSchema[n].format] = estimated_number_of_rows;
+                    property_collector.format["type"] = targetSchema[n].format  // should not exist if type textarea
+                }
+            }
+
+            if ( ! display_order.items[d].inSchema ) {
+                property_collector["ad_hoc"] = "true"
+            }
+
+            property_collector["value"] = node_data.data[n];
+            data.properties.push( property_collector )
+        }
+
+        html_stub = renderTemplate( "node-details-template", data)
+
+        // can set the event based pointers after the render and append
+        $( '#nodeDetails' ).append( $( html_stub)).css( "padding-left", "20px");
+        $( '.ad-hoc-property-delete-button').click( deleteAdHocProperty );
+        $( '#new-node' ).click( presentABlankNode );
+        $( '#save-node' ).click( saveCurrentNode );
+        $( '#delete-node' ).click( deleteNode );
+        $( '#add-ad-hoc-property' ).click( addAdHocProperty );
+//                $( '#collapsible-container').collapsible()
+        /*
+         // show relationships
+         $relationship_set = $( '<div id = "relationship set" data-role = "collapsible-set"></div>' );
+         $relationship_set.collapsible();
+         //                $relationships.append( $( '<h3>Outbound Relationships</h3>' ))
+
+         // outlinks
+         for ( n in node_data.outLinkDetails ) {
+         $relationships = $( '<div data-role = "collapsible"></div>' )
+         $relationships.collapsible();
+         $relationships.append( '<h2>'+n+'</h2>' );
+         $( '<ul/>', {id: n, "data-role":'listview', "data-filter":"true"} ).appendTo( $relationships );
+         $( '#' + n ).listview();
+         for ( k in node_data.outLinkDetails[n] ) {
+         html_stub = '<li class="outLink" >'+
+         '<a id="'+node_data.outLinkDetails[n][k].endId+'_'+node_data.outLinkDetails[n][k].endType+ '">' +
+         //'+node_data.outLinkDetails[n][k].endType +'
+         node_data.outLinkDetails[n][k].endName + ' ('  +
+         node_data.outLinkDetails[n][k].endType + ' ) ' +
+         '</a>'                                         +
+         '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete_rel_' + node_data.outLinkDetails[n][k].id + '"></a>'     +
+         '</li>';
+         $new_item = $ ( html_stub );
+         $new_item.click( onClix ).appendTo( $relationships.find( '#' + n ));
+         $new_item.find("#delete_rel_"+node_data.outLinkDetails[n][k].id).click( deleteRelationship )
+         }
+         $( '#' + n ).listview( 'refresh' );
+         $relationship_set.append( $relationships )
+         }
+
+         // inlinks
+         //                $relationships.append( $( '<h3>Inbound Relationships</h3>' ))
+         for ( n in node_data.inLinkDetails ) {
+         $relationships = $( '<div data-role = collapsible"></div>' )
+         $relationships.collapsible();
+         $relationships.append( '<p>inverse of '+n+'</p>' );
+         $( '<ul/>', {id: 'inverse' + n, "data-role":'listview', "data-filter":"true"} ).appendTo( $relationships );
+         $( '#inverse' + n ).listview();
+         for ( k in node_data.inLinkDetails[n] ) {
+         html_stub = '<li class="inLink" ><a id="'+node_data.inLinkDetails[n][k].endId+'_'+node_data.inLinkDetails[n][k].endType+ '">' +
+         //'+node_data.inLinkDetails[n][k].endType +'
+         node_data.inLinkDetails[n][k].endName + ' ('  +
+         node_data.inLinkDetails[n][k].endType + ' ) ' +
+         '</a>'                                        +
+         '<a data-role="button" data-icon="delete" data-iconpos="notext" id="delete_rel_' + node_data.inLinkDetails[n][k].id + '"></a>'     +
+         '</li>';
+         $new_item = $ ( html_stub );
+         $new_item.click( onClix ).appendTo( $relationships.find( '#inverse' + n ));
+         $new_item.find("#delete_rel_"+node_data.inLinkDetails[n][k].id).click( deleteRelationship )
+         }
+         $( '#inverse' + n ).listview( 'refresh' );
+         $relationship_set.append( $relationships )
+         }
+         $( '#spa2').append( $relationship_set )
+         $( '#spa2' ).find( "#relationship set").collapsibleset( "refresh" )
+         */
+        return true;
+    };
+
+    // get node data from neo4j - either via an event or  direct query based on node_id
+    showNodeData = function ( event, node_id ) {
+        var
+                target_node_id,         node_data;
+
+        if (event) {
+            target_node_id = event.target.id
+        }
+        else {
+            target_node_id = node_id
+        }
+
+        currentNodeId = target_node_id;
+        isNewNode = false;
+        getNodeDataViaCallBack( target_node_id, presentNodeData )
+        /*
+         ajax_request = $.ajax({
+         url: '/neo4j/node/' + target_node_id + '/navigate',
+         type: 'get',
+         headers: {Accept: 'application/json'},
+         success: presentNodeData,
+         //    (data) {
+         //    node_data = data;
+         //    presentNodeData( node_data );
+         //                        $( '#nodeDetails').append( '<p id="navigateJSON">' + JSON.stringify(verbose_node_html) + '</p>');
+         //},
+         error: function (data) {
+         alert('error ', data['responseText'])
+         }
+         });
+         */
+    };
+    // Process Meta nodes /processMetaNodes/
+    // receives Meta data and places into their containers and attaches them
+    // to the DOM
+    processMetaNodes = function () {
+        var data,       i,          html_stub;
+
+        data = {}
+        data["items"] = [];
+        for (i in metaNodes ) {
+            data['items'].push( {id:i, name:metaNodes[i].data.name} )
+        }
+        html_stub = renderTemplate ( "meta-node-template", data)
+        $( '#Meta').append( $( html_stub ))
+        $( '.meta-new').click( newNode )
+        $( '.meta-list').click( getNodes )
+        $( '#lines').listview();
+    };
+    // setup the node browser from label and node id
+    //
+    setupBrowser = function ( label, node_id ) {
+//                targetSchema = {}
+        if ( metaNodes[ metaNodesNameIndex[ label ]].data.hasOwnProperty( "schema" )) {
+            targetSchema = JSON.parse( metaNodes[ metaNodesNameIndex[ label ]].data.schema )
+        }
+        showNodeData( null, node_id )
+    };
+
+    //  Initialise the relationship editor
+    initRelationshipEditor = function() {
+        var
+                $node_data,             html_stub,              current_meta_node_id,
+                ajax_request,           meta_node_data,         $meta_node_data,
+                legal_out_links,        legal_in_links;
+
+        $( "#spa2").children().remove()
+        var data={"title":"hello world"}
+
+        html_stub = renderTemplate( "#collapsible-template", {"title":"hello world"} )
+        $( "#spa2").append( $( html_stub ))
+//                $( "#collapsible-container" ).collapsibleset( "refresh" )
+
+        $node_data = $( "<p>"                                +
+                JSON.stringify(currentNode.data)  +
+                "</p>"                               +
+                "<p>Is a "                           +
+                targetNodeLabel                  +
+                "</p>"                               +
+                "<p>"                                +
+                metaNodesNameIndex[targetNodeLabel] +
+                "</p>"
+        );
+        current_meta_node_id = metaNodesNameIndex[targetNodeLabel];
+
+        // get navigate form of metaNode
+        ajax_request = $.ajax({
+            url: '/neo4j/node/' + current_meta_node_id + '/navigate',
+            type: 'get',
+            headers: {Accept: 'application/json'},
+            success: function (data) {
+                var
+                        relationships,		rel,			focus_links,
+                        $new_item,
+                        html_stub = "";
+
+                meta_node_data = data;
+                legal_out_links = meta_node_data.outLinkDetails;
+                legal_in_links = meta_node_data.inLinkDetails;
+//                        $("#spa2").append($("<p>"+JSON.stringify(meta_node_data)+"</p>"))
+                $("#spa2").append( $node_data );
+
+                html_stub = html_stub + "<div data-role='collapsible'>"
+                html_stub = html_stub + "<h2>Relationships</h2>"
+                focus_links = currentNode.outLinkDetails;
+                for (relationships in focus_links ) {
+                    for (rel in focus_links[relationships]) {
+                        html_stub = html_stub + "<p><b>THIS " + relationships + " </b>"
+                                + focus_links[relationships][rel].endName + "</p>"
+                    }
+                }
+                html_stub = html_stub + "</div>"
+
+                html_stub = html_stub + "<div data-role='collapsible'>"
+                html_stub = html_stub + "<h2>Inverse Relationships</h2>"
+                focus_links = currentNode.inLinkDetails;
+                for (relationships in focus_links ) {
+                    for (rel in focus_links[relationships]) {
+                        html_stub = html_stub + "<p><b>" + focus_links[relationships][rel].endName + " "
+                                + relationships + " THIS</b></p>"
+                    }
+                }
+                html_stub = html_stub + "</div>"
+
+                html_stub = html_stub + "<hr>"
+                html_stub = html_stub + "<h2>Legal Outbound Relationships</h2>"
+                for (relationships in legal_out_links ) {
+                    for (rel in legal_out_links[relationships]) {
+                        html_stub = html_stub + "<p><b>THIS " + relationships + " </b><i>"
+                                + legal_out_links[relationships][rel].endName + "</i></p>"
+                    }
+                }
+                html_stub = html_stub + "<h2>Legal Inbound Relationships</h2>"
+                for (relationships in legal_in_links ) {
+                    for (rel in legal_in_links[relationships]) {
+                        html_stub = html_stub + "<p><b><i>" + legal_in_links[relationships][rel].endName + " </i></b>"
+                                + relationships + " THIS</p>"
+                    }
+                }
+                $relationship_type_selector = $( '<ul/>', {id:'legal outbound relationships', "data-role":'listview', "data-filter":"false", "style":"width: 20%" } );  // .appendTo( $( '#Meta' ) )
+                $relationship_type_selector.listview();
+                for ( relationships in legal_out_links ) {
+                    $new_item = $( '<li class="lor" ><a id="'+relationships+'" href="">' + relationships + '</li>');
+                    $new_item.click( function ( event ) {
+                        var $relationship_node_type_selector,      $new_item
+//                                alert( legal_out_links[event.target.id].length );
+                        // todo provide the user the choice of node types based on the selector
+                        if ( legal_out_links[event.target.id].length > 1) {
+                            alert( legal_out_links[event.target.id].length );
+                            $relationship_node_type_selector =  $( '<ul/>', {id:'legal node types', "data-role":'listview', "data-filter":"true", "style":"width: 20%" } );
+                        }
+                        else {
+                            alert( legal_out_links[event.target.id][0].endName )
+                            getNodesViaCallBack( legal_out_links[event.target.id][0].endName, function( nodes ) {
+                                var
+                                        $relationship_list = $( '<ul/>', {id:'legal outbound relationships', "data-role":'listview', "data-filter":"true" } );
+                                alert ( JSON.stringify( nodes ))} )
+                        }
+                    });
+                    $relationship_type_selector.append( $new_item );
+                }
+                $relationship_type_selector.listview( "refresh" );
+                $( "#spa2" ).append( $( html_stub ) );
+                $( "#spa2").append( $( "<div/>", {"data-role":"collapsible", "id":"legal_outbound"} ))
+                $( "#legal_outbound").append( $("<h2>Legal Outbound</h2>"))
+                $( "#legal_outbound").append( $relationship_type_selector );
+//                        $.find( "#legal_outbound").collapse( "refresh" );
+                $.mobile.changePage($( "#spa2" ));
+            },
+            error: function (data) {
+                alert('error ', data['responseText'])
+            }
+        });
+    };
+
+    // Public method /initModule/
+    // sets initial state and provides feature
+    //
+    initModule = function ($container) {
+        isNewNode = false;
+        // request nodes by type
+        ajax_request = $.ajax({
+            url: '/neo4j/nodes/label/Meta',
+            type: 'get',
+            headers: {Accept: 'application/json'},
+            success: function (data) {
+                var
+                        n;
+                for ( n in data ) {
+                    metaNodes[data[n].id[0]] = data[n];
+                    metaNodesNameIndex[data[n].data.name] = data[n].id[0]
+                }
+                processMetaNodes()},
+            error: function (data) {
+                alert('error ', data['responseText'])
+            }
+        });
+        return true;
+    };
+
+    return { initModule: initModule }
+
+}(jQuery));
+// Start spa once DOM is ready
+//
+jQuery(document).ready(
+        function () {
+            spa.initModule(jQuery('#spa'));
+        }
+);
+</script>
+
+<div style="min-height: 483px;" class="ui-page ui-page-theme-a ui-page-active" tabindex="0" data-url="spa" data-role="page" id="spa">
+    <div class="ui-grid-c">
+        <div class="ui-block-a" style="width: 20%" id="Meta"><div id="metaHeader" class="ui-bar ui-bar-a" style="height:15px">Meta</div>
+            <ul class="ui-listview" id="lines" data-role="listview" data-filter="true">
+                <li class="line ui-li-has-alt ui-first-child">
+                    <a id="7018" class="meta-list ui-btn" href="">BusinessProcess</a>
+                    <a title="" data-role="button" data-icon="star" data-iconpos="notext" class="meta-new ui-btn ui-btn-icon-notext ui-icon-star" id="new_7018"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7019" class="meta-list ui-btn" href="">BusinessInformationObject</a>
+                    <a title="" data-role="button" data-icon="star" data-iconpos="notext" class="meta-new ui-btn ui-btn-icon-notext ui-icon-star" id="new_7019"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7020" class="meta-list ui-btn" href="">Application</a>
+                    <a title="" data-role="button" data-icon="star" data-iconpos="notext" class="meta-new ui-btn ui-btn-icon-notext ui-icon-star" id="new_7020"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7021" class="meta-list ui-btn" href="">Meta</a>
+                    <a title="" data-role="button" data-icon="star" data-iconpos="notext" class="meta-new ui-btn ui-btn-icon-notext ui-icon-star" id="new_7021"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7022" class="meta-list ui-btn" href="">Cluster</a>
+                    <a title="" data-role="button" data-icon="star" data-iconpos="notext" class="meta-new ui-btn ui-btn-icon-notext ui-icon-star" id="new_7022"></a>
+                </li>
+                <li class="line ui-li-has-alt ui-last-child">
+                    <a id="7085" class="meta-list ui-btn" href="">Attribute</a>
+                    <a title="" data-role="button" data-icon="star" data-iconpos="notext" class="meta-new ui-btn ui-btn-icon-notext ui-icon-star" id="new_7085"></a>
+                </li>
+            </ul></div>
+        <div class="ui-block-b" style="width: 20%" id="nodesList"><div id="nodesHeader" class="ui-bar ui-bar-a" style="height:15px">BusinessProcess</div>
+            <form class="ui-filterable"><div class="ui-input-search ui-shadow-inset ui-input-has-clear ui-body-inherit ui-corner-all"><input data-type="search" placeholder="Filter items..."><a href="#" class="ui-input-clear ui-btn ui-icon-delete ui-btn-icon-notext ui-corner-all ui-input-clear-hidden" title="Clear text">Clear text</a></div></form><ul class="ui-listview" id="nodeNames" data-role="listview" data-filter="true">
+                <li class="line ui-li-has-alt ui-first-child">
+                    <a id="7023" class="node-list ui-btn" href="">Set Policy and Monitor Adherance</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7023"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7024" class="node-list ui-btn" href="">BP01.02</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7024"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7025" class="node-list ui-btn" href="">BP01</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7025"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7026" class="node-list ui-btn" href="">BP01.01</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7026"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7028" class="node-list ui-btn" href="">BP03</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7028"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7029" class="node-list ui-btn" href="">BP05</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7029"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7031" class="node-list ui-btn" href="">BP04</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7031"></a>
+                </li>
+                <li class="line ui-li-has-alt">
+                    <a id="7032" class="node-list ui-btn" href="">Hedge the structural IRR</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7032"></a>
+                </li>
+                <li class="line ui-li-has-alt ui-last-child">
+                    <a id="7034" class="node-list ui-btn" href="">BP02</a>
+                    <a title="" data-role="button" data-icon="delete" data-iconpos="notext" class="node-delete ui-btn ui-btn-icon-notext ui-icon-delete" id="delete_7034"></a>
+                </li>
+            </ul></div>
+        <div class="ui-block-c" style="width: 60%" id="detailsPanel"><div id="detailsHeader" class="ui-bar ui-bar-a" style="height:15px">Details</div>
+            <div style="padding-left: 20px;" id="nodeDetails">
+                <form>
+                    <div class="ui-field-contain">
+                        <label for="name">name:</label>
+                        <input class="nodeBrowserData" id="name" size="24" value="Hedge the structural IRR" type="text">
+
+                    </div>
+                    <div class="ui-field-contain">
+                        <label for="description">description:</label>
+                        <textarea class="nodeBrowserData" id="description" style="width: 95%; max-height: 250px" rows="4" value="The structural interest rate risk (IRR) requires hedging.">                    </textarea>
+                    </div>
+                    <button id="new-node">New</button>
+                    <button id="save-node">Save</button>
+                    <button id="delete-node">Delete</button>
+                    <button id="add-ad-hoc-property">+ Ad-hoc</button>
+                </form>
+
+                <hr>
+
+                <div class="ui-collapsible-set" data-role="collapsible-set" id="collapsible-container">
+
+                    <div class="ui-collapsible" data-role="collapsible">
+                        <h2>One</h2>
+                        <p>
+                            This is an example of rendered html in a collapsible unit
+                        </p>
+                    </div>
+
+                    <div class="ui-collapsible" data-role="collapsible">
+                        <h2>Two</h2>
+                        <p>
+                            This is a second example of rendered html in a collapsible unit
+                        </p>
+                    </div>
+
+                </div></div><!-- /grid-a -->
+        </div>
+    </div>
+
+</div>
+<div data-url="spa2" data-role="page" id="spa2">
+</div>
+
+
+
+<div class="ui-loader ui-corner-all ui-body-a ui-loader-default"><span class="ui-icon-loading"></span><h1>loading</h1></div>

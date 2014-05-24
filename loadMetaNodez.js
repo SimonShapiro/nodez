@@ -208,7 +208,7 @@ async.series(
         }
     ],
     function (err,results){
-        console.log("End of series")
+        console.log("End of series");
         console.log(results)
     }
-)
+);

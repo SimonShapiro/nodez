@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deferred Experiment</title>
+
+    <script src="/javascripts/jquery-copy/jquery-1.10.2.js"></script>
+    <script type='text/javascript'>
+
+        var spa = (function ($) {
+            var
+                initModule,         randomTimeout1;
+
+            randomTimeout1 = function(id) {
+                var
+                    timer,       def;
+
+                def = $.Deferred();
+                timer = Math.random()*10000;
+
+                setTimeout(function(){
+                    alert("Back from " + id + " after " + timer + " ms");
+                    def.resolve();
+                },timer);
+
+                return def.promise();
+            };
+
+            initModule = function() {
+                var
+                    rTm1, rTm2, rTm3, rTm4;
+
+                alert("hello world");
+                rTm1 =randomTimeout1("one");
+                rTm2 =randomTimeout1("two");
+                $.when(rTm1,rTm2).done(function(){
+                    alert("I always keep my 1st promises")
+                });
+                rTm3 = randomTimeout1("three")
+                rTm3.done(function(){
+                    alert("three done")
+                    rTm4 = randomTimeout1("four")
+                })
+            };
+
+            return { initModule: initModule }
+
+        }(jQuery));
+        // Start spa once DOM is ready
+        //
+        jQuery(document).ready(
+                function () {
+                    spa.initModule();  // jQuery('#spa')
+                }
+        );
+    </script>
+</head>
+<body>
+
+</body>
+</html>
