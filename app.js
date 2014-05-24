@@ -85,6 +85,9 @@ app.get( '/neo4j/node/:id/navigate', neo.getNodeByIdWithNavigation );
 app.get( '/neo4j', neo.serviceRoot );
 app.get( '/neo4j/nodes/label/:label', neo.getNodesByLabel );
 
+app.post( '/neo4j/node/:id/relationship', neo.saveRelationship );
+app.del( '/neo4j/relationship/:id', neo.deleteRelationship );
+app.get( '/neo4j/relationship/:id', neo.getRelationship );
 
 //app.get('/test', test.index)
 //app.get('/rules/:matchingTarget', rules.listAll)

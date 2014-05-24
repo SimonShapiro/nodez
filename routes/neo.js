@@ -2,8 +2,65 @@
 
 var
   configMap = {
-    testRoute : "http://localhost:7474/db/data/"
+    testRoute1 : "http://ec2-54-227-49-218.compute-1.amazonaws.com:7474",
+    testRoute : "http://localhost:7474"
   };
+
+exports.getRelationship = function(req, res){
+  console.log("got it")
+}
+
+exports.saveRelationship = function( req, res ){
+  var
+    options,        http_request;
+
+  options = {
+    url:      configMap.testRoute + '/db/data/node/' + req.params.id + '/relationships',
+    method:   'POST',
+    headers:  { 'content-type': 'application/json'},
+    body:     JSON.stringify( req.body )
+  };
+  http_request = require( "request" );
+  http_request( options, function( error, results_from_neo4j){
+    if ( !error ){
+      if( results_from_neo4j.statusCode == 201 ) {
+        res.json(201, { "msg":"Relationship created" })
+      }
+      else {
+        res.json( results_from_neo4j.statusCode, { "msg": JSON.parse(results_from_neo4j.body).message })
+      }
+    }
+    else {
+      res.json(500, { "msg":"server error" })
+    }
+  })
+};
+
+exports.deleteRelationship = function( req, res ){
+  var
+    options,        http_request;
+
+  options = {
+    url:      configMap.testRoute + '/db/data/relationship/' + req.params.id,
+    method:   'DELETE',
+    headers:  { 'content-type': 'application/json'},
+    body:     JSON.stringify( req.body )
+  };
+  http_request = require( "request" );
+  http_request( options, function( error, results_from_neo4j){
+    if ( !error ){
+      if( results_from_neo4j.statusCode == 204 ) {
+        res.json(204, { "msg":"Relationship deleted" })
+      }
+      else {
+        res.json( results_from_neo4j.statusCode, { "msg": JSON.parse(results_from_neo4j.body).message })
+      }
+    }
+    else {
+      res.json(500, { "msg":"server error" })
+    }
+  })
+};
 
 exports.deleteNodeById = function ( req, res ) {
   var
@@ -19,7 +76,7 @@ exports.deleteNodeById = function ( req, res ) {
     "params": { "id": eval( original_request_object.params.id ) }
   };
   options = {
-    url:      configMap.testRoute + 'cypher',
+    url:      configMap.testRoute + '/db/data/cypher',
     method:   'POST',
     headers:  { 'content-type': 'application/json'},
     body:     JSON.stringify( cypher)
@@ -31,7 +88,7 @@ exports.deleteNodeById = function ( req, res ) {
     if ( !error ) {
       if ( results_from_neo4j.statusCode == 200 ) {
         options = {
-          url:      configMap.testRoute + 'node/' + req.params.id,
+          url:      configMap.testRoute + '/db/data/node/' + req.params.id,
           method:   'DELETE',
           headers:  { 'content-type': 'application/json'}
         };
@@ -69,8 +126,11 @@ exports.postNodeWithLabel = function (req, res) {
     options,                    http_request,               original_request_object,
     original_response_object,   respond_with,               response_body;
 
+  // 1st save
+  req.body.data.revision = 1;
+
   options = {
-    url:      configMap.testRoute + 'node',
+    url:      configMap.testRoute + '/db/data/node',
     method:   'POST',
     headers:  { 'content-type': 'application/json'},
     body:     JSON.stringify( req.body.data )
@@ -88,9 +148,11 @@ exports.postNodeWithLabel = function (req, res) {
         respond_with["id"] = response_body.self.split('/').slice(-1)[0]
         respond_with["label"] = original_request_object.body.label
         respond_with["name"] = original_request_object.body.data.name
+        respond_with["revision"] = original_request_object.body.data.revision
+        respond_with["lastModifiedDate"] = original_request_object.body.data.lastModifiedDate
         //update label on noe44j
         options = {
-          url:configMap.testRoute + 'node/' + respond_with['id'] + '/labels',
+          url:configMap.testRoute + '/db/data/node/' + respond_with['id'] + '/labels',
           method:'POST',
           headers:{ 'content-type': 'application/json' },
           body: JSON.stringify( respond_with["label"] )
@@ -129,7 +191,7 @@ exports.putNodeById = function( req,res ) {
     originalRequest,      browserResponseObject,
 
     options = {
-      url:      configMap.testRoute + 'node/' + req.params.id,
+      url:      configMap.testRoute + '/db/data/node/' + req.params.id,
       method:   'GET',
       headers:  { 'content-type': 'application/json'}
     },
@@ -145,7 +207,7 @@ exports.putNodeById = function( req,res ) {
 
     //put to neo4j
     options = {
-      url:      configMap.testRoute + 'node/' + req.params.id + '/properties',
+      url:      configMap.testRoute + '/db/data/node/' + req.params.id + '/properties',
       method:   'PUT',
       headers:  { 'content-type': 'application/json'},
       body:     JSON.stringify( originalRequest.body )
@@ -199,7 +261,7 @@ exports.getNodesByLabel = function(req,res) {
     function neo4jGetNodesByLabel(req,res) {
         var
             request,
-            DBROUTE="http://localhost:7474/db/data/label/"+req.params.label+"/nodes",
+            DBROUTE = configMap.testRoute + "/db/data/label/" + req.params.label + "/nodes",
             options = {
                 url: DBROUTE,
                 method: "GET",
@@ -297,7 +359,7 @@ exports.getNodeById = function(req,res) {
         }   
     }
     function neo4jGetNodeById(req,res) {
-        var DBROUTE="http://localhost:7474/db/data/node/"+req.params.id
+        var DBROUTE= configMap.testRoute + "/db/data/node/"+req.params.id
         options={
             url:DBROUTE,
             method:"GET",
@@ -356,7 +418,7 @@ exports.getNodeByIdWithNavigation = function(req,res) {
         }
     }
     function neo4jGetNodeById(req,res) {
-        var DBROUTE="http://localhost:7474/db/data/node/"+req.params.id
+        var DBROUTE= configMap.testRoute + "/db/data/node/"+req.params.id
         options={
             url:DBROUTE,
             method:"GET",
@@ -397,10 +459,10 @@ exports.getNodeByIdWithNavigation = function(req,res) {
         processOutLinks(req)
     }
     function processOutLinks(req) {  //process out links
-        var DBROUTE="http://localhost:7474/db/data/cypher"
+        var DBROUTE=  configMap.testRoute + "/db/data/cypher"
       // todo need to return id(rr)
         cypher={
-// todo consider using labels for processing this cypher - currently using absolute positioning [n] below
+// todo consider using cypher labels for processing this cypher - currently using absolute positioning [n] below
             "query":"match (m)-[rr]->(n) where id(m)={id} return type(rr),labels(n),n.name,id(n),id(rr)",
             "params":{
                 "id":eval(req.params.id)  //must be a number to be a valid neo4j id
@@ -451,7 +513,7 @@ exports.getNodeByIdWithNavigation = function(req,res) {
         })
     }
     function processInLinks(returning) {  //process in links
-        var DBROUTE="http://localhost:7474/db/data/cypher";
+        var DBROUTE= configMap.testRoute + "/db/data/cypher";
       // todo need to return id(rr)
         cypher={
 // todo consider using labels for processing this cypher - currently using absolute positioning [n] below
@@ -548,7 +610,7 @@ exports.serviceRoot = function(req,res) {
 	}
 	
 	getNeo4jServiceRoot = function (req,res) {
-		var DBROUTE = "http://localhost:7474/db/data/"
+		var DBROUTE =  configMap.testRoute + "/db/data/"
 		console.log("service root")
 		options={
 			url:DBROUTE,
