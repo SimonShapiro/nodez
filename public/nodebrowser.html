@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Node Network Browser</title>
+    <script src="/javascripts/jQuery-copy/jquery-1.10.2.js"></script>
+    <script type='text/javascript' src='/javascripts/knockout/knockout-3.1.0.js'></script>
+    <script type='text/javascript' src='/javascripts/knockout/knockout-switch-case.js'></script>
+    <script type='text/javascript' src='/javascripts/amplify/amplify.min.js'></script>
+    <script type='text/javascript'>
+
+        var spa = (function ($) {
+            var
+                s4,                     guid,
+                initModule,             getNodesByLabel,           loadMetaNodesViewModel,
+                metaNodeViewModel,      metaViewModel,             nodesViewModel,
+                loadNodesViewModel,     getNodeData,               loadNodeDetailsViewModel,
+                nodeListViewModel,      nodeViewModel,             nodeDetailsViewModel,
+                frameworkAttributeList, configMap,                 saveNode,
+                saveNewNode,            findIndexOfPropertyInArray,changeLink;
+
+            var stateRecord;
+
+            stateRecord = {currentState:"start"};
+
+
+
+            s4 = function () {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                        .toString(16)
+                        .substring(1);
+            };
+
+            guid = function () {
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                        s4() + '-' + s4() + s4() + s4();
+            };
+
+
+            frameworkAttributeList = [ "creationDate","revision", "uuid", "lastModifiedDate" ];
+
+            configMap = {
+                textareaMinLines: 2,
+                maxFieldSize: 60
+            };
+
+            findIndexOfPropertyInArray = function(theArray, theProperty, theValue) {
+                var index
+                var returning = -1;
+                for (index in theArray) {
+                    if (theArray[index][theProperty] == theValue) {
+                        returning = index
+                    }
+                }
+                return returning
+            };
+
+            metaNodesViewModel = function () {
+                var
+                    self;
+                self = this;
+                self.metaVM = $.Deferred();
+
+                self.observableName      = ko.observable( "Meta" );
+//                self.observableSchema    = ko.schema("");  // todo need default schema for all meta nodes
+                self.observableArrayList = ko.observableArray( [] );
+                self.newNodePossibleFlag = ko.observable( false );
+
+                self.selectedMetaNode    = ko.observable();
+
+                self.selectedMetaNode.subscribe(function() {  // might be moved to a controller region
+                    var
+                        getNodeList;
+                    self.newNodePossibleFlag( true );
+
+                    nodeViewModel.showDiv( false );
+//                    nodesViewModel.selectedNode ( {} )
+
+                    getNodeList = getNodesByLabel(self.selectedMetaNode().name );
+                    getNodeList.done( function(data ){
+                        nodesViewModel.refresh( data );
+//                        alert(JSON.stringify(data))
+                    }).then(function(data){
+                        var
+                            getFullMeta;
+//                        alert("then fullMeta with " + self.selectedMetaNode().id)
+                        getFullMeta = getNodeData( self.selectedMetaNode().id );
+                        getFullMeta.done( function(data) {    // establish list of legal links for the node
+                            var  link,              link_type;
+
+                            nodeViewModel.legalLinks          = [];
+                            nodeViewModel.metaNode            = data;
+                            for ( link_type in nodeViewModel.metaNode.outLinkDetails ) {
+                                for (link in nodeViewModel.metaNode.outLinkDetails[link_type] ) {
+                                    nodeViewModel.legalLinks.push( {
+                                        outDirection:   true,
+                                        inDirection :   false,
+                                        direction   :   "out",
+                                        linkName    :   link_type,
+                                        type        :   nodeViewModel.metaNode.outLinkDetails[link_type][link].endName
+                                    });
+                                }
+                            }
+                            for ( link_type in nodeViewModel.metaNode.inLinkDetails ) {
+                                for (link in nodeViewModel.metaNode.inLinkDetails[link_type] ) {
+                                    nodeViewModel.legalLinks.push( {
+                                        inDirection : true,
+                                        outDirection: false,
+                                        direction   :   "in",
+                                        linkName    :   link_type,
+                                        type        :   nodeViewModel.metaNode.inLinkDetails[link_type][link].endName
+                                    });
+                                }
+                            }
+//                            alert("new meta selected with state "+stateRecord.currentState)
+                            if (stateRecord.currentState == 'making internal changes') {
+                                amplify.publish("newMetaNodeSelected")
+                            }
+                        })
+                        getFullMeta.fail ( function ( data ) {
+                            alert( "meta Node Data Error!" );
+                            stateRecord.currentState = "stopped";
+                            amplify.publish("stateChanged", stateRecord )
+                        });
+                    });
+                    getNodeList.fail ( function ( data ) {
+                        alert( "node List Data Error!" );
+                        stateRecord.currentState = "stopped";
+                        amplify.publish("stateChanged", stateRecord )
+                    });
+                }, "change");
+                self.refresh = function( data ) {
+                    var
+                            n,      arrayData;
+                    arrayData = [];
+                    for ( n in data ) {
+                        arrayData.push( { id:data[n].id[0], name:data[n].data.name, schema:data[n].data.schema  } )   // the REST service returns the id in an array
+                    }
+                    self.observableArrayList( arrayData );     // todo create a new array with only the data we need
+                };
+
+                self.newNodeFromMeta = function() {
+                    amplify.publish( "newNodeFromMeta", self.selectedMetaNode())
+                };
+            };
+
+            nodeListViewModel = function () {
+                var
+                    self,       observableSchemaLocal,    observableNameLocal;
+                        self = this;
+                self.observableName        = ko.observable( "Node" );
+                self.observableSchema      = ko.observable("");
+                self.observableArrayList   = ko.observableArray( [] );
+                self.selectedNode          = ko.observable( );
+                self.selectedNode.subscribe(function() {
+                    var
+                            data_selected;
+                    data_selected = self.selectedNode();
+//                    alert(self.observableArrayList().length)
+                    if ( data_selected ) {
+                        data_selected.schema = observableSchemaLocal;
+                        data_selected.label  = observableNameLocal;
+                        stateRecord.currentState == "editable"
+                        nodeViewModel.currentNodeId = data_selected.id;
+                        nodeViewModel.observableName( data_selected.name );  // look at metaNodeViewModel.selectedNode
+                        nodeViewModel.showDiv( true );
+                        getNode = getNodeData ( data_selected.id );
+                        getNode.done( function( data ) {
+                            nodeViewModel.observableSchema ( metaViewModel.selectedMetaNode().schema );
+                            nodeViewModel.currentNodeLabel = metaViewModel.selectedMetaNode().name;
+                            nodeViewModel.isMeta( (nodeViewModel.currentNodeLabel == "Meta") );
+                            nodeViewModel.metaNodeList( (metaViewModel.observableArrayList()) )
+//                    alert("Calling refresh")
+                            nodeViewModel.refresh( data );
+                            stateRecord.currentState = "editable";
+                            amplify.publish("stateChanged", stateRecord );
+                        });
+                        getNode.fail( function( data ) {
+                            alert( "node Data Error!" );
+                            stateRecord.currentState = "stopped"
+                            amplify.publish("stateChanged", stateRecord )
+                        });
+//                        amplify.publish("nodeSelected", data_selected );
+                    }
+                }, "change");
+                self.respondTo_GetNodeViaMockSelect = amplify.subscribe("getNodeViaMockSelect", function(data) {
+                    self.selectedNode(data);
+                });
+
+                self.refresh = function( data ) {
+                    var
+                        n,      arrayData;
+
+                    arrayData = [];
+                    for ( n in data ) {
+                        arrayData.push( { id:data[n].id[0], name: ko.observable( data[n].data.name )});  // the REST service returns the id in an array
+                    }
+                    self.observableArrayList( arrayData );     // todo create a new array with only the data we need
+//                    amplify.publish("nodeListReady")
+                };
+                self.respondToDeleteNode = amplify.subscribe( "deleteNodeResponse", function( msg ) {
+                   if (msg.header.statusCode == 200 ) {
+                       getNodesByLabel( self.observableName(), self.refresh );
+                   }
+                });
+                self.respondToSaveNodeResponse = amplify.subscribe( "saveNodeResponse", function( msg ) {
+                    var
+                        n;
+
+                    if (msg.header.statusCode == 201 ) {
+                        getNodesByLabel( self.observableName(), self.refresh );
+                    }
+                    else {
+                        n = $.inArray(self.selectedNode(),self.observableArrayList());
+                        self.observableArrayList()[n].name( msg.contents.response.name );
+                    }
+                })
+            };
+
+            nodeDetailsViewModel = function( nm, properties, outLinks, inLinks ) {
+                var
+                    self = this;
+
+                self.linkToFollow        = {};
+                self.metaNode            = {};
+                self.legalLinks          = [];
+                self.legalLink           = function (data) {
+                        this.linkName      = ko.observable(data.linkName);
+                        this.outDirection  = ko.observable(data.outDirection);
+                        this.inDirection   = ko.observable(data.inDirection);
+                        this.count         = ko.observable(data.count);
+                        this.nodeType      = ko.observable(data.type);
+                        return this;
+                };
+                self.legalOutlinks       = ko.observableArray( [] );
+                self.legalInLinks        = ko.observableArray( [] );
+                self.observableRelationshipList = ko.observableArray([]);
+                self.selectedRelationship = ko.observable();
+
+
+                self.showDiv              = ko.observable( false );
+                self.currentNode          = {};
+                self.currentNodeId        = 0;
+                self.currentNodeLabel     = "";
+                self.observableName       = ko.observable( nm );
+                self.observableSchema     = ko.observable( "" );
+                self.observableProperties = ko.observableArray( properties );
+                self.observableOutLinks   = ko.observableArray( outLinks);
+                self.observableInLinks    = ko.observableArray( inLinks);
+                self.observableLinks      = ko.observableArray( [] );
+
+                self.showModal           = ko.observable(false);
+                self.modalMsg            = ko.observable();
+                self.logMsg            = ko.observable();
+
+                self.showRelationshipEditor = ko.observable( false );
+
+                self.outLinkedNodes       = ko.observableArray();
+                self.outOptionsCaption    = ko.observable();
+                self.selectedOutNode      = ko.observable();
+                self.inLinkedNodes        = ko.observableArray();
+                self.inOptionsCaption     = ko.observable();
+                self.selectedInNode       = ko.observable();
+
+                self.isMeta               = ko.observable( false );
+                self.inLinkMetaNode         = ko.observable();
+                self.outLinkMetaNode         = ko.observable();
+                self.metaNodeList         = ko.observableArray();
+                self.outLinkName          = ko.observable();
+                self.inLinkName           = ko.observable();
+                self.addMetaRelationship  = ko.observable();
+
+                self.refresh = function( data ) {
+                    var
+                        p,                      properties,             t,
+                        targetSchema,           display_order,          n,
+                        property_collector,     field_size,             estimated_number_of_rows,
+                        relationship,           rel_name;
+//                    alert("main refresh")
+                    self.currentNode = data;
+                    properties = [];
+                    display_order = {"items":[],
+                        "indexOf": function( property, value ) {
+                            var ret = -1,     n
+                            for ( n in this.items ) {
+                                if (this.items[n][property] == value) {
+                                    ret = n
+                                }
+                            }
+                            return ret
+                        }};
+                    targetSchema = JSON.parse(self.observableSchema());
+                    for (t in targetSchema) {
+                        display_order.items.push( {"name":t, "inSchema": true} );
+                        if ( !(data.data.hasOwnProperty( t ))) {
+                            data.data[t] = targetSchema[t].type   // todo when newNode has defaults we will need the default here as well
+                        }
+                    }
+                    for ( n in data.data ) {
+                        // add balance of non-framework attributes to display order
+                        if ( ( display_order.indexOf( "name", n ) == -1 ) && ( $.inArray(n, frameworkAttributeList ) == -1 )) {
+                            display_order.items.push( { "name":n, "inSchema": false} );
+                        }
+                    }
+                    for ( d in display_order.items ) {
+                        property_collector = {}
+                        n = display_order.items[d].name;
+                        if ( data.data[n].hasOwnProperty( "length" )) {
+                            field_size = Math.min( data.data[n].length,configMap.maxFieldSize );
+                        }
+                        else {
+                            field_size = 12;
+                        }
+                        property_collector.property_name = n;
+                        property_collector.field_size    = ko.observable ( field_size );
+                        property_collector.textarea = false;
+                        property_collector.type = "string"
+                        // style the widget based on the format entry in the schema
+                        if ( targetSchema[n] ) {
+                            property_collector.type = targetSchema[n].type;
+                            if ( targetSchema[n].hasOwnProperty("format") ) {
+                                property_collector.format = {};
+                                // switch to one of the html5 text input types
+                                if ( targetSchema[n].format == "textarea") {
+                                    property_collector.textarea = true;
+                                    estimated_number_of_rows = Math.max( data.data[n].split("\n").length, configMap.textareaMinLines );
+                                    property_collector.format["rows"] = estimated_number_of_rows + 2; //todo consider parameterizing the extra rows
+                                    property_collector.format["type"] = targetSchema[n].format  // should not exist if type textarea
+                                }
+                                else {
+                                    property_collector.format["type"] = targetSchema[n].format  // should not exist if type textarea
+                                }
+                            }
+                        }
+
+                        if ( ! display_order.items[d].inSchema ) {
+                            property_collector["ad_hoc"]   = true;
+                        }
+                        else {
+                            property_collector["ad_hoc"] = false
+                        }
+
+                        property_collector["value"] = ko.observable( data.data[n] );
+                        properties.push( property_collector )
+                    }
+                    self.observableProperties ( properties );
+                    var l,  cNode;
+                    self.observableLinks([]);
+                    for (relationship in self.currentNode.outLinkDetails) {
+                        for ( l in self.currentNode.outLinkDetails[relationship]) {
+                            cNode = self.currentNode.outLinkDetails[relationship][l];
+                            cNode.outDirection = true;
+                            cNode.inDirection  = false;
+                            cNode.relationship = relationship;
+                            self.observableLinks.push(cNode)
+                        }
+                    }
+                    for (relationship in self.currentNode.inLinkDetails) {
+                        for ( l in self.currentNode.inLinkDetails[relationship]) {
+                            cNode = self.currentNode.inLinkDetails[relationship][l];
+                            cNode.outDirection = false;
+                            cNode.inDirection  = true;
+                            cNode.relationship = relationship;
+                            self.observableLinks.push(cNode)
+                        }
+                    }
+                    self.setupLegalRelationships()
+                };
+
+                self.newNode = function() {
+                    var
+                        createNodeFromSchema,       new_node;
+
+                    createNodeFromSchema = function ( schemaString ) {
+                        var
+                                node_data_object, p,        schema;
+
+                        // set up from schema
+                        schema = JSON.parse( schemaString);
+                        node_data_object = {};
+                        node_data_object.data = {};
+                        for ( p in schema ) {
+                            node_data_object.data[p] = schema[p].type
+                        }
+                        // add framework properties
+                        node_data_object.data.uuid = guid();
+                        node_data_object.data.revision = 0;
+                        node_data_object.data.creationDate = new Date().toISOString();
+                        node_data_object.data.lastModifiedDate = new Date().toISOString();
+                        node_data_object.data.name = 'new ' + self.currentNodeLabel;
+                        node_data_object.inLinks  = {};
+                        node_data_object.outLinks = {};
+                        //format as though it came from /node/:id/navigate
+                        return ( node_data_object );
+                    };
+
+                    new_node = createNodeFromSchema( self.observableSchema()  )
+                    self.refresh ( new_node );
+                };
+
+                self.respondToNewNodeFromMeta = amplify.subscribe( "newNodeFromMeta", function(msg) {
+                    self.observableSchema( msg.schema );
+                    self.showDiv (true );
+                    self.currentNodeLabel = msg.name;
+                    self.observableName( "new " + msg.name )
+                    self.newNode();  // todo when the new button on the form is gone, merge with the above self.newNode()
+                });
+                self.deleteNodeButton = function() {
+                    if (confirm( "Warning! Deleting will delete the node and all its relationships.  Do you want to go ahead and delete node " + self.currentNodeId + "?" )) {
+                        amplify.publish("deleteNode", {id: self.currentNodeId})  // todo format as message with header and contents
+                    }
+                };
+
+                self.respondToDeleteNode = amplify.subscribe( "deleteNodeResponse", function(msg) {
+                    self.showDiv( false );
+                });
+
+                self.addAdHocButton = function() {
+                    var
+                        new_ad_hoc_property = {
+                            ad_hoc          : true,
+                            property_name   : "",
+                            type            : "string",   //  todo allow client to define type of ad_hoc variable
+                            textarea        : false,
+                            value           : ko.observable(""),
+                            field_size      : ko.observable( 12 )  // todo min field size should be parameterised
+                        };
+                    // todo when there are a greater variety of input types collect here for the new ad-hoc property
+                    new_ad_hoc_property.property_name = prompt( "Ad-hoc property name" );
+                    if ( new_ad_hoc_property.property_name ) {
+                        self.observableProperties.push( new_ad_hoc_property )
+                    }};
+
+                self.saveNode = function ( data, event ) {
+                    var
+                            b, i,               browser_object,         browser_data_object,
+                            respondToSaveNode;
+
+
+                    browser_data_object = {};
+                    browser_object = self.observableProperties();
+                    for (b in browser_object) {
+                        browser_data_object[browser_object[b].property_name] = browser_object[b].value()
+//                        alert( JSON.stringify( browser_object[b])+"|"+browser_object[b].value()+"|")
+                    }
+                    //add framework fields object
+                    for ( i in frameworkAttributeList ) {
+                        browser_data_object[frameworkAttributeList[i]]=self.currentNode.data[frameworkAttributeList[i]]
+                    }
+                    if ( browser_data_object.revision >= 1 ) {
+                        amplify.publish("saveNodeRequest", {header:{id:self.currentNodeId}, contents:browser_data_object});
+                    }
+                    else
+                    {
+                        amplify.publish("saveNewNodeRequest", {header:{label:self.currentNodeLabel}, contents:browser_data_object});
+                    }
+//                    saveNode( self.currentNodeId, browser_data_object, function() {alert("saving")})
+                };
+
+                self.respondToSaveNode = amplify.subscribe("saveNodeResponse", function( msg ) {
+                    var
+                        data_selected;
+                    if (( msg.header.statusCode == 200) || ( msg.header.statusCode == 201 )) {
+                        msg.contents.original.revision         = msg.contents.response.revision;
+                        msg.contents.original.lastModifiedDate = msg.contents.response.lastModifiedDate
+                        self.currentNode.data = msg.contents.original
+                        if ( msg.header.statusCode == 201 ) {
+                            self.currentNodeId = msg.contents.response.id
+                        }
+                        self.refresh( self.currentNode )  //todo broadcast node name
+                        alert(  msg.header.statusMsg + "- Revision: " + msg.contents.response.revision )
+                    }
+                    else {  //todo interpret error status codes
+                        if ( msg.header.statusCode == 409 ) {
+                            if ( confirm( "Concurrency clash.  Someone has updated this node.  Do you want to refresh?") ) {
+                                data_selected = {id: self.currentNodeId, name: self.currentNode.data.name, schema: self.observableSchema()}
+                                amplify.publish( "nodeSelected", data_selected )
+                            }
+                        }
+                        else {
+                            self.refresh( self.currentNode )
+                            alert( "Problem saving node: " + JSON.stringify( msg ))
+                        }
+                    }
+                });
+
+                self.delete_ad_hoc = function ( data, event ) {
+                    self.observableProperties.remove(data)
+                };
+
+                self.delRelButton = function(data, event) {
+                    var delPromise;
+                    if (confirm("Warning deleting the relationship cannot be undone.  Confirm delete?(" + data.id + ")")){
+                        delPromise = deleteRelationship( data.id );
+                        delPromise.done( function(){
+                            var nodeData;
+                            alert("Relationship deleted");
+                            nodeData = getNodeData(self.currentNodeId);
+                            nodeData.done( function( data ){
+                                self.refresh(data)
+                            });
+                            nodeData.fail( function( data ){
+                                alert("Problem retrieving node")
+                            });
+                        });
+                        delPromise.fail( function(){
+                            alert("Failed deleting relationship")
+                        });
+                    }
+//                    alert("del relationship clicked")
+                };
+
+                self.showRelButton = function( data, event ) {
+                    amplify.publish( "changeBasedOnRelationship", data )
+                };
+
+                self.clearModalButton = function() {
+                    self.showModal( false );
+                };
+
+                self.legalNodeFactory = function(node) {
+                    var n,          observable;
+                    observable = {};
+                    for (n in node) {
+                        observable[n] = ko.observable(node[n])
+                    }
+                    return observable;
+                };
+
+                self.setupLegalRelationships = function() {
+                    var legalRel,      legalList = [],          legalNode;
+                    self.showRelationshipEditor(false);
+                    for (legalRel in self.legalLinks) {
+                        legalNode = self.legalLinks[legalRel]
+                        legalNode.fixedNode  =  self.currentNode.data.name;
+                        if (legalNode.outDirection) {
+                            legalNode.selector   =  legalNode.fixedNode + " " + legalNode.linkName + " " + legalNode.type
+                        }
+                        else {
+                            legalNode.selector   =  legalNode.type + " " + legalNode.linkName + " " + legalNode.fixedNode
+                        }
+                        legalList.push( self.legalNodeFactory(legalNode) )
+                    }
+                    self.observableRelationshipList(legalList)  // legaLIst to be ko.observable as well?
+    // todo make provision for meta node editor here
+                };
+
+                self.selectedRelationship.subscribe( function( data ){
+                    var getList,    outDirection,   linkedToType;
+                    if ( data ) {
+                    outDirection = data.outDirection();
+                    linkedToType = data.type();
+//                    alert( "I need to collect" + JSON.stringify(data.type()))
+                    getList = getNodesByLabel(data.type())
+                    getList.done(function (data){
+                        var n
+
+                        self.showRelationshipEditor(true);
+//                        alert(outDirection + " back with " + JSON.stringify(data))
+                        if (outDirection) {
+                            self.outLinkedNodes([]);
+                            self.outLinkedNodes.push({id:-1,name:linkedToType})
+                            for ( n in data) {
+                                self.outLinkedNodes.push({id:data[n].id[0],name:data[n].data.name})
+                            }
+                        }
+                        else {
+                            self.inLinkedNodes([]);
+                            self.inLinkedNodes.push({id:-1,name:linkedToType})
+                            for ( n in data) {
+                                self.inLinkedNodes.push({id:data[n].id[0],name:data[n].data.name})
+                            }
+                        }
+                    })
+                }},"change");
+
+                self.saveRelationship = function( data, event ) {
+                    var dir = data.direction();
+                    var saveRel;
+
+                    if (dir == "in" ) {
+//                        alert( dir + self.currentNodeId + self.selectedRelationship().linkName() + JSON.stringify(self.selectedInNode().id))
+                        saveRel = saveRelationship(self.selectedInNode().id, self.selectedRelationship().linkName(),self.currentNodeId )
+                    }
+                    else {
+//                        alert( dir + self.currentNodeId + self.selectedRelationship().linkName() + JSON.stringify(self.selectedOutNode().id))
+                        saveRel = saveRelationship(self.currentNodeId, self.selectedRelationship().linkName(), self.selectedOutNode().id)
+                    }
+                    saveRel.done( function( data ){
+                        var nodeData;
+                        alert("Relationship added");
+                        self.showRelationshipEditor( false );
+                        nodeData = getNodeData(self.currentNodeId);
+                        nodeData.done( function( data ){
+                            self.refresh(data)
+                        });
+                        nodeData.fail( function( data ){
+                            alert("Problem retrieving node")
+                        });
+                        nodesViewModel.selectedNode({id:self.currentNodeId, name: self.currentNode.data.name})
+                    });
+                    saveRel.fail( function (data ){
+                        alert("Failed saving relationship")
+                        self.showRelationshipEditor( false );
+                    })
+                };
+
+                self.cancelRelationshipEditor = function( ){
+                    self.showRelationshipEditor( false );
+                };
+
+                amplify.subscribe("stateChanged",function( data ) {
+                    self.modalMsg( data.currentState )
+                });
+                amplify.subscribe("logMsg", function( data ) {
+                    self.logMsg( self.logMsg() + " | " + data )
+                });
+
+                self.addOutMetaRelationship = function( data, event ){  //todo ensure that blanks are replaced by _ in LinkName
+                    var saveRel;
+                    if( data.outLinkName() ){
+                        saveRel = saveRelationship( data.currentNodeId, data.outLinkName(), data.outLinkMetaNode().id )
+                        saveRel.done( function( data ){
+                            var nodeData;
+                            alert("Meta Relationship added")
+                            nodeData = getNodeData(self.currentNodeId);
+                            nodeData.done( function( data ){
+                                self.refresh(data)
+                            });
+                            nodeData.fail( function( data ){
+                                alert("Problem retrieving node")
+                            });
+                            nodesViewModel.selectedNode({id:self.currentNodeId, name: self.currentNode.data.name})
+                        });
+                        saveRel.fail( function (data ){
+                            alert("Failed saving relationship")
+                        })
+                    }
+                };
+
+                self.addInMetaRelationship = function( data, event ){  //todo ensure that blanks are replaced by _ in LinkName
+                    var saveRel;
+                    if( data.inLinkName() ){
+                        saveRel = saveRelationship( data.inLinkMetaNode().id, data.inLinkName(), data.currentNodeId )
+                        saveRel.done( function( data ){
+                            var nodeData;
+                            alert("Meta Relationship added");
+                            nodeData = getNodeData(self.currentNodeId);
+                            nodeData.done( function( data ){
+                                self.refresh(data)
+                            });
+                            nodeData.fail( function( data ){
+                                alert("Problem retrieving node")
+                            });
+                            nodesViewModel.selectedNode({id:self.currentNodeId, name: self.currentNode.data.name})
+                        });
+                        saveRel.fail( function (data ){
+                            alert("Failed saving relationship")
+                        });
+                    }
+                };
+            };
+
+// -------------------------------------------------------------------------------------------------------------------
+
+            saveRelationship = function(fromId,relType,toId) {
+                var ajax_request;
+
+                ajax_request = $.ajax({
+                    url         : '/neo4j/node/' + fromId + '/relationship',
+                    type        : 'post',
+                    headers     : {Accept: 'application/json'},
+                    data        : {
+                        to    : toId,
+                        type  : relType
+                    }
+                });
+                return ajax_request.promise()
+            };
+
+            deleteRelationship = function(relId) {
+                var ajax_request;
+
+                ajax_request = $.ajax({
+                    url         : '/neo4j/relationship/' + relId,
+                    type        : 'delete',
+                    headers     : {Accept: 'application/json'}
+                });
+                return ajax_request.promise()
+            };
+
+            deleteNode = amplify.subscribe( "deleteNode", function(msg) {
+                var
+                    ajax_request;
+
+                ajax_request = $.ajax({
+                    url: '/neo4j/node/' + msg.id,
+                    type: 'delete',
+                    headers: {Accept: 'application/json'},
+
+                    // TODO interpret status code
+                    success: function ( response_from_server, status_msg, ajax_response ) {
+                        alert( ajax_response.responseText + status_msg );
+                        amplify.publish( "deleteNodeResponse",  {header:{statusCode:ajax_response.status, statusMsg: status_msg},
+                            contents:{response: response_from_server, original: msg.id}})
+                    },
+                    error: function( response_from_server, status, ajax_response ) {
+                        amplify.publish("saveNodeResponse", {header:{statusCode: response_from_server.status, statusMsg: response_from_server.statusText },
+                            contents:{response: response_from_server, original: msg.contents}});
+                    }
+                })
+            });
+
+            saveNode = amplify.subscribe( "saveNodeRequest", function( msg ) {
+                var
+                    ajax_request;
+                // PUT if existing
+                ajax_request = $.ajax({
+                    url: '/neo4j/node/' + msg.header.id,
+                    type: 'put',
+                    headers: {Accept: 'application/json'},
+                    data: msg.contents,
+                    success: function ( response_from_server, status_msg, ajax_response ) {
+                        amplify.publish("saveNodeResponse", {header:{statusCode:ajax_response.status, statusMsg: status_msg},
+                                                             contents:{response: response_from_server, original: msg.contents}})
+                    },
+                    error: function( response_from_server, status, ajax_response ) {
+                        amplify.publish("saveNodeResponse", {header:{statusCode: response_from_server.status, statusMsg: response_from_server.statusText },
+                                                              contents:{response: response_from_server, original: msg.contents}});
+                    }
+                });
+            });
+            saveNewNode = amplify.subscribe("saveNewNodeRequest", function( msg ){
+                var
+                    ajax_request;
+
+                ajax_request = $.ajax({
+                    url: '/neo4j/node',
+                    type: 'post',
+                    headers: {Accept: 'application/json'},
+                    data: { label: msg.header.label, data: msg.contents },
+
+                    // TODO interpret status code
+                    success: function ( response_from_server, status_msg, ajax_response ) {
+                        amplify.publish("saveNodeResponse", {header:{statusCode:ajax_response.status, statusMsg: status_msg},
+                            contents:{response: response_from_server, original: msg.contents}})
+                    },
+                    error: function( response_from_server, status, ajax_response ) {
+                        amplify.publish("saveNodeResponse", {header:{statusCode: response_from_server.status, statusMsg: response_from_server.statusText },
+                            contents:{response: response_from_server, original: msg.contents}});
+                    }
+                })
+            });
+/*
+            loadNodeDetailsViewModel = function( data ) {
+                alert( JSON.stringify( data) )
+                display_order = {"items":[],
+                    "indexOf": function( property, value ) {
+                        var ret = -1,     n
+                        for ( n in this.items ) {
+                            if (this.items[n][property] == value) {
+                                ret = n
+                            }
+                        }
+                        return ret
+                    }};
+
+                // targetSchema may contain items that are NOT in node_data
+                for (t in targetSchema) {
+                    display_order.items.push( {"name":t, "inSchema": true} );
+                    if ( !(node_data.data.hasOwnProperty( t ))) {
+                        node_data.data[t] = targetSchema[t].type   // todo when newNode has defaults we will need the default here as well
+                    }
+                }
+
+                currentNode = node_data;
+                for ( n in node_data.data ) {
+                    // add balance of non-framework attributes to display order
+                    if ( ( display_order.indexOf( "name", n ) == -1 ) && ( frameworkAttributeList.indexOf( n ) == -1 )) {
+                        display_order.items.push( { "name":n, "inSchema": false} );
+                    }
+                }
+                for ( d in display_order.items ) {
+                    property_collector = {}
+                    n = display_order.items[d].name;
+                    if ( node_data.data[n].hasOwnProperty( "length" )) {
+                        field_size = Math.min( node_data.data[n].length,60 );
+                    }
+                    else {
+                        field_size = 2;
+                    }
+                    property_collector.property_name = n;
+                    property_collector.field_size    = field_size;
+
+                    // style the widget based on the format entry in the schema
+                    if ( targetSchema[n] ) {
+                        if ( targetSchema[n].hasOwnProperty("format") ) {
+                            property_collector.format = {}
+                            // switch to one of the html5 text input types
+                            estimated_number_of_rows = Math.max( node_data.data[n].split("\n").length, configMap.textareaMinLines );
+                            property_collector.format[targetSchema[n].format] = estimated_number_of_rows;
+                            property_collector.format["type"] = targetSchema[n].format  // should not exist if type textarea
+                        }
+                    }
+
+                    if ( ! display_order.items[d].inSchema ) {
+                        property_collector["ad_hoc"] = "true"
+                    }
+
+                    property_collector["value"] = node_data.data[n];
+                    data.properties.push( property_collector )
+                }
+            };
+*/
+            getNodesByLabel = function( node_label ) {  //todo change to promises
+                var
+                    ajax_request;
+
+                ajax_request = $.ajax({
+                    url: '/neo4j/nodes/label/' + node_label,
+                    type: 'get',
+                    headers: {Accept: 'application/json'}})
+                return ajax_request.promise();
+            };
+
+            getNodeData = function( node_id ) {  //todo change to amplify msg protocol
+                var
+                        ajax_request;
+
+                ajax_request = $.ajax({
+                    url: '/neo4j/node/' + node_id + '/navigate',
+                    type: 'get',
+                    headers: {Accept: 'application/json'}})
+                return ajax_request.promise()
+                };
+
+            initialiseDisplay = function() {
+                var getMetaList;
+//      This is the start of the controller section.  Notice that the calls have been externalised!
+                getMetaList = getNodesByLabel( 'Meta');
+                getMetaList.done(function( data ) {
+                    stateRecord.currentState = "initialised"
+                    amplify.publish("stateChange",stateRecord);
+                    metaViewModel.refresh( data );
+                }); // todo target for $.Deferred() ???
+                getMetaList.fail(function( data ) {
+                    alert( "meta List Data Error!" );
+                    stateRecord.currentState = "stopped"
+                    amplify.publish("stateChanged", stateRecord )
+                }); // todo target for $.Deferred() ???
+            };
+
+//      EVENTS ------------------------------------------------------------------------------------------------------
+
+        amplify.subscribe("nodeSelected", function( data ) {
+            var getNode;
+            if(( stateRecord.currentState == "ready for node selection" ) ||
+               ( stateRecord.currentState == "making internal changes" )  ||
+               ( stateRecord.currentState == "editable" )) {   // todo give a warning if moving away from a live edit
+                nodeViewModel.currentNodeId = data.id;
+                nodeViewModel.observableName( data.name );  // look at metaNodeViewModel.selectedNode
+                nodeViewModel.showDiv( true );
+                getNode = getNodeData ( data.id );
+                getNode.done( function( data ) {
+                    nodeViewModel.observableSchema ( metaViewModel.selectedMetaNode().schema );
+                    nodeViewModel.currentNodeLabel = metaViewModel.selectedMetaNode().name;
+//                    alert("Calling refresh")
+                    nodeViewModel.refresh( data )
+                    stateRecord.currentState = "editable"
+                    amplify.publish("stateChanged", stateRecord )
+                });
+                getNode.fail( function( data ) {
+                    alert( "node Data Error!" );
+                    stateRecord.currentState = "stopped"
+                    amplify.publish("stateChanged", stateRecord )
+                });
+        }});
+
+        amplify.subscribe( "changeBasedOnRelationship", function( data ) {
+            var i;
+
+            changeLink = data;
+
+            nodeViewModel.showDiv( false );
+//            nodeViewModel.selectedNode( {} );
+            stateRecord.currentState = "making internal changes"
+            amplify.publish("stateChanged", stateRecord )
+            i = findIndexOfPropertyInArray( metaViewModel.observableArrayList(), "name", data.endType );
+            metaViewModel.selectedMetaNode(metaViewModel.observableArrayList()[i]);
+
+            amplify.subscribe("newMetaNodeSelected", function( ) {
+                nodesViewModel.selectedNode({id:changeLink.endId, name: changeLink.endName})
+                stateRecord.currentState = "editable"
+                amplify.publish("stateChanged", stateRecord )
+                return false  // to stop a build up of responses to the message
+            });
+
+        });
+ /*
+        amplify.subscribe("process internal node selection", function( changeLink ) {   // if any
+//            amplify.publish("nodeSelected",{id:data.endId, name: ko.observable(data.endName)})
+            nodesViewModel.selectedNode({id:data.endId, name: ko.observable(data.endName)})
+            stateRecord.currentState = "editable"
+            amplify.publish("stateChanged", stateRecord )
+        });
+*/
+// -------------------------------------------------------------------------------------------------------------------
+            initModule = function() {
+                metaViewModel  = new metaNodesViewModel();
+                nodesViewModel = new nodeListViewModel ();
+                nodeViewModel  = new nodeDetailsViewModel( 'Details', [], [], []);
+                ko.applyBindings( metaViewModel,  document.getElementById( 'metaContainer' ) );
+                ko.applyBindings( nodesViewModel, document.getElementById( 'nodesContainer' ) );
+                ko.applyBindings( nodeViewModel,  document.getElementById( 'nodeContainer' ) );
+                initialiseDisplay();
+            };
+
+            return { initModule: initModule }
+
+        }(jQuery));
+        // Start spa once DOM is ready
+        //
+        jQuery(document).ready(
+                function () {
+                    spa.initModule();  // jQuery('#spa')
+                }
+        );
+    </script>
+</head>
+<style>
+    .input_textarea {
+        width: 300px
+    }
+    #modal {
+        background:     #f7f7f7;
+        position:       relative;
+        width:          90%;
+        border-radius:  5px;
+    }
+    #bar {
+        background:#f7f7f7;
+        margin: 1%;
+    }
+    #content {
+        background: #f7f7dd;
+        height: 120px;
+        margin: 1%;
+    }
+</style>
+<body>
+<div id="metaContainer">
+    <select data-bind="options: observableArrayList,
+                       optionsText: 'name',
+                       value: selectedMetaNode,
+                       optionsCaption: 'Meta Node'">
+    </select><span data-bind="visible: newNodePossibleFlag"><button data-bind="click: newNodeFromMeta">New</button></span>
+</div>
+<div id="nodesContainer">
+    <select data-bind="options: observableArrayList,
+                       optionsText: 'name',
+                       value: selectedNode,
+                       optionsCaption: 'Node'">
+    </select>
+</div>
+<hr>
+<div id="nodeContainer" data-bind="visible: showDiv">
+    <div>
+        <table >
+            <tbody data-bind="foreach: observableProperties">
+                <tr>
+                    <td class="td-1">
+                        <span data-bind="text: property_name" />
+                    </td>
+                    <td class="td-2" >
+                        <div data-bind="switch: type">
+                            <div data-bind="case: 'string'">
+                                <input class="input" data-bind="value: value, attr: {size:field_size}" />
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                            <div data-bind="case: 'number'">
+                                <input type="number" class="input" data-bind="value: value, attr: {size:field_size}" />
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                            <div data-bind="case: 'date'">
+                                <input type="date" size=12 class="input" data-bind="value: value" />
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                            <div  data-bind="case: 'textarea'">
+                                <textarea class="input_textarea" data-bind="value: value, attr: {rows: format.rows}"><span data-bind="value: value"></span></textarea>
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                            <div data-bind="case: $default">
+                                <input class="input" data-bind="value: value, attr: {size:field_size}" />
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p>
+            <button data-bind="click: saveNode" id="save-node">Save</button>
+            <button data-bind="click: deleteNodeButton" id="delete-node">Delete</button>
+            <button data-bind="click: addAdHocButton" id="add-ad-hoc-property">+ Ad-hoc</button>
+        </p>
+        <hr>
+    </div>
+    <div id="relationshipContainer">
+        <table>
+            <tbody  data-bind="foreach: observableLinks">
+                <tr data-bind="if: outDirection">
+                    <td>
+                        <span data-bind="text: $parent.observableName()"></span>
+                    </td>
+                    <td>
+                        <span data-bind="text: relationship"></span>
+                    </td>
+                    <td>
+                        <button data-bind="click: $parent.showRelButton">
+                            <span data-bind="text: endName"></span> (
+                            <span data-bind="text: endType"></span>
+                            )
+                        </button>
+                    </td>
+                    <td>
+                        <button data-bind="click: $parent.delRelButton">-</button>
+                    </td>
+                </tr>
+                    <tr  data-bind="if: inDirection">
+                        <td>
+                            <button data-bind="click: $parent.showRelButton">
+                                <span data-bind="text: endName"></span> (
+                                <span data-bind="text: endType"></span>
+                                )
+                            </button>
+                        </td>
+                        <td>
+                            <span data-bind="text: relationship"></span>
+                        </td>
+                        <td>
+                            <span data-bind="text: $parent.observableName()"></span>
+                        </td>
+                        <td>
+                            <button data-bind="click: $parent.delRelButton">-</button>
+                        </td>
+                    </tr>
+            </tbody>
+        </table>
+        <div data-bind="ifnot: isMeta">
+            <select data-bind="options: observableRelationshipList,
+                           optionsText: 'selector',
+                           value: selectedRelationship,
+                           optionsCaption: 'New Relationship'">
+            </select>
+        </div>
+        <div data-bind="if: isMeta">
+            <br>
+            <div>You can create new relationships using the template below:</div>
+            <br>
+            <div>
+                <span data-bind="text: observableName()"></span>
+                <input data-bind="value: outLinkName"/>
+                <select data-bind="options: metaNodeList,
+                       optionsText: 'name',
+                       value: outLinkMetaNode,
+                       optionsCaption: 'Meta Node'">
+                </select>
+                <button data-bind="click: addOutMetaRelationship">+</button>
+            </div>
+            <div>
+                <select data-bind="options: metaNodeList,
+                       optionsText: 'name',
+                       value: inLinkMetaNode,
+                       optionsCaption: 'Meta Node'">
+                </select>
+                <input data-bind="value: inLinkName"/>
+                <span data-bind="text: observableName()"></span>
+                <button data-bind="click: addInMetaRelationship">+</button>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div data-bind="visible: showRelationshipEditor">
+        <div data-bind="with: selectedRelationship">
+            <span data-bind="if: outDirection">
+                <span data-bind="text: fixedNode"></span>
+                <span data-bind="text: linkName"></span>
+                <select data-bind="options: $parent.outLinkedNodes,
+                                   optionsText: 'name',
+                                   value: $parent.selectedOutNode">
+
+                </select>
+            </span>
+            <span data-bind="if: inDirection">
+                <select data-bind="options: $parent.inLinkedNodes,
+                                   optionsText: 'name',
+                                   value: $parent.selectedInNode">
+
+                </select>
+                <span data-bind="text: linkName"></span>
+                <span data-bind="text: fixedNode"></span>
+            </span>
+            <button data-bind="click: $parent.saveRelationship">Save</button>
+            <button data-bind="click: $parent.cancelRelationshipEditor">Cancel</button>
+        </div>
+    </div>
+    <hr>
+    <div id="relationships" data-bind="visible: showModal">
+        <div id="bar">
+            <span data-bind="text: $data.observableName()"></span>
+        </div>
+        <textarea id="content"><span  data-bind="value: $data.modalMsg"></span></textarea>
+        <button data-bind="click: clearModalButton">clear</button>
+    </div>
+    <div data-bind="text: logMsg"></div>
+    <div data-bind="text: modalMsg"></div>
+</div>
+</body>
+</html>

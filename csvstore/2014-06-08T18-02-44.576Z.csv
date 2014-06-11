@@ -1,0 +1,29 @@
+id|type|revision|creationDate|description|name|lastModifiedDate|uuid|comments|
+2|Person|2|2014-05-28T10:10:45.957Z|undefined|SimonS|2014-06-08T15:22:48.951Z|ec67774d-60dd-620d-6368-1d0de6bddf0b|Simon Says|
+3|Person|1|2014-05-28T10:11:45.680Z|undefined|HarryS|2014-05-28T10:11:45.680Z|f1427778-32c1-6123-ee9c-a8fc4895ab4b|textarea|
+4|Person|1|2014-05-28T10:12:12.813Z|undefined|MichaelS|2014-05-28T10:12:12.813Z|7012d637-faa7-331a-a016-c7f7d409eb2d|textarea|
+6|Company|2|2014-05-28T10:17:31.037Z|textarea|A Group|2014-06-08T06:16:21.356Z|cfaad894-1af3-264c-66da-cb32c6911147|undefined|
+7|Company|2|2014-05-28T10:17:48.790Z|textarea|A1 Company|2014-05-28T10:18:12.285Z|c1dc11af-a526-ed1e-6381-8e0bd893de47|undefined|
+8|Company|1|2014-05-28T10:18:36.490Z|textarea|A2 Company|2014-05-28T10:18:36.490Z|36cf1d4a-ecbf-cbcb-6527-7505f9c98990|undefined|
+66659|Company|1|2014-05-28T13:29:36.868Z||A2a|2014-05-28T13:29:36.868Z|90d10406-93a0-a313-5a30-5c4bb0169a2b|undefined|
+66660|Company|1|2014-05-28T13:30:05.611Z|textarea|A2b|2014-05-28T13:30:05.611Z|fa0215a7-e453-f681-fbbd-587365e48d3e|undefined|
+66661|Company|1|2014-05-28T13:30:27.300Z|textarea|A2c|2014-05-28T13:30:27.300Z|4e231d7e-d6f5-f454-5f94-10e813314f39|undefined|
+66662|Person|1|2014-05-28T13:33:34.092Z|undefined|HannahS|2014-05-28T13:33:34.092Z|41130128-b624-a22d-a507-42758c88c2e3|textarea|
+66663|Person|1|2014-05-28T13:34:16.079Z|undefined|BarbS|2014-05-28T13:34:16.079Z|8610f8fb-587c-2dc2-41ae-c5764dc59116|textarea|
+66664|Person|1|2014-05-28T16:18:47.104Z|undefined|DavidS|2014-05-28T16:18:47.104Z|95972a44-50d2-f900-329a-6805671cf829|textarea|
+66665|Person|1|2014-05-28T16:20:01.830Z|undefined|NicoleS|2014-05-28T16:20:01.830Z|0de1e8d3-f076-e3c4-f9e9-44404c3153f6|textarea|
+66666|Person|1|2014-05-30T04:47:02.823Z|undefined|FredJ|2014-05-30T04:47:02.823Z|08578ba3-6d35-26f3-453d-515794f3fc3f||
+66667|Company|2|2014-05-30T10:26:11.026Z|Wellness, Performance and Leadership Coaching and Training|Wellformance SA|2014-05-30T10:27:49.834Z|b3d1a82f-6731-968d-58dd-9ae0c4203d44|undefined|
+66668|Person|2|2014-05-30T10:53:00.581Z|undefined|SatceyLY|2014-05-30T10:55:23.617Z|6a11b0a6-b902-f4e1-b142-25054f8e6186|textarea|
+66669|Person|1|2014-05-31T07:15:18.106Z|undefined|MiriamS|2014-05-31T07:15:18.106Z|4c5f53a9-55ba-7faa-a285-b34c3c0610d1|textarea|
+66670|Company|1|2014-06-08T07:18:55.455Z|textarea|Orphan Annie Co|2014-06-08T07:18:55.456Z|038b8107-5a69-ffad-f0f6-9107cc479bc9|undefined|
+66671|Person|1|2014-06-08T07:24:26.940Z|undefined|Orphan Annie|2014-06-08T07:24:26.940Z|d93489f1-30dc-0efc-6eaf-b6019ed78af7|textarea|
+source|target|rel|
+6|7|OWNER_OF|
+6|8|OWNER_OF|
+2|6|OWNER_OF|
+8|66659|OWNER_OF|
+8|66660|OWNER_OF|
+8|66661|OWNER_OF|
+66668|66667|OWNER_OF|
+7|8|OWNER_OF|
