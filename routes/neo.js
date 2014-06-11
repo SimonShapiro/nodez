@@ -1,10 +1,11 @@
 // TODO Remove DBROUTE in favour of configMap.testRoute
 
 var
-  configMap = {
-    testRoute1 : "http://ec2-54-227-49-218.compute-1.amazonaws.com:7474",
-    testRoute : "http://localhost:7474"
-  };
+  fs,         configMap;
+
+fs = require( 'fs' );
+configMap = JSON.parse( fs.readFileSync( 'package.conf' ));
+console.log(JSON.stringify(configMap));
 
 exports.getRelationship = function(req, res){
   console.log("got it")
@@ -43,8 +44,7 @@ exports.deleteRelationship = function( req, res ){
   options = {
     url:      configMap.testRoute + '/db/data/relationship/' + req.params.id,
     method:   'DELETE',
-    headers:  { 'content-type': 'application/json'},
-    body:     JSON.stringify( req.body )
+    headers:  { 'content-type': 'application/json'}
   };
   http_request = require( "request" );
   http_request( options, function( error, results_from_neo4j){
@@ -290,7 +290,7 @@ exports.getNodesByLabel = function(req,res) {
             }
         }
         else {
-            console.log("!OK "+response.statusCode+":"+options.url+":Neo4j results="+body)
+            console.log("!OK "+error+":Neo4j results="+body)
         }
     }
     function neo4jExtractDataRows(req,body) {

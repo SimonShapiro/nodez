@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>Node Network Browser</title>
-    <script src="/javascripts/jquery-copy/jquery-1.10.2.js"></script>
+    <script src="/javascripts/jQuery-copy/jquery-1.10.2.js"></script>
     <script type='text/javascript' src='/javascripts/knockout/knockout-3.1.0.js'></script>
+    <script type='text/javascript' src='/javascripts/knockout/knockout-switch-case.js'></script>
     <script type='text/javascript' src='/javascripts/amplify/amplify.min.js'></script>
     <script type='text/javascript'>
 
@@ -210,7 +211,7 @@
                         getNodesByLabel( self.observableName(), self.refresh );
                     }
                     else {
-                        n = self.observableArrayList().indexOf(self.selectedNode());
+                        n = $.inArray(self.selectedNode(),self.observableArrayList());
                         self.observableArrayList()[n].name( msg.contents.response.name );
                     }
                 })
@@ -297,7 +298,7 @@
                     }
                     for ( n in data.data ) {
                         // add balance of non-framework attributes to display order
-                        if ( ( display_order.indexOf( "name", n ) == -1 ) && ( frameworkAttributeList.indexOf( n ) == -1 )) {
+                        if ( ( display_order.indexOf( "name", n ) == -1 ) && ( $.inArray(n, frameworkAttributeList ) == -1 )) {
                             display_order.items.push( { "name":n, "inSchema": false} );
                         }
                     }
@@ -313,8 +314,10 @@
                         property_collector.property_name = n;
                         property_collector.field_size    = ko.observable ( field_size );
                         property_collector.textarea = false;
+                        property_collector.type = "string"
                         // style the widget based on the format entry in the schema
                         if ( targetSchema[n] ) {
+                            property_collector.type = targetSchema[n].type;
                             if ( targetSchema[n].hasOwnProperty("format") ) {
                                 property_collector.format = {};
                                 // switch to one of the html5 text input types
@@ -417,6 +420,7 @@
                         new_ad_hoc_property = {
                             ad_hoc          : true,
                             property_name   : "",
+                            type            : "string",   //  todo allow client to define type of ad_hoc variable
                             textarea        : false,
                             value           : ko.observable(""),
                             field_size      : ko.observable( 12 )  // todo min field size should be parameterised
@@ -464,7 +468,7 @@
                             self.currentNodeId = msg.contents.response.id
                         }
                         self.refresh( self.currentNode )  //todo broadcast node name
-                        alert( JSON.stringify( msg ))
+                        alert(  msg.header.statusMsg + "- Revision: " + msg.contents.response.revision )
                     }
                     else {  //todo interpret error status codes
                         if ( msg.header.statusCode == 409 ) {
@@ -486,7 +490,7 @@
 
                 self.delRelButton = function(data, event) {
                     var delPromise;
-                    if (confirm("Warning deleting the relationship cannot be undone.  Confirm delete?")){
+                    if (confirm("Warning deleting the relationship cannot be undone.  Confirm delete?(" + data.id + ")")){
                         delPromise = deleteRelationship( data.id );
                         delPromise.done( function(){
                             var nodeData;
@@ -543,6 +547,7 @@
 
                 self.selectedRelationship.subscribe( function( data ){
                     var getList,    outDirection,   linkedToType;
+                    if ( data ) {
                     outDirection = data.outDirection();
                     linkedToType = data.type();
 //                    alert( "I need to collect" + JSON.stringify(data.type()))
@@ -567,7 +572,7 @@
                             }
                         }
                     })
-                },"change");
+                }},"change");
 
                 self.saveRelationship = function( data, event ) {
                     var dir = data.direction();
@@ -583,7 +588,8 @@
                     }
                     saveRel.done( function( data ){
                         var nodeData;
-                        alert("Relationship added")
+                        alert("Relationship added");
+                        self.showRelationshipEditor( false );
                         nodeData = getNodeData(self.currentNodeId);
                         nodeData.done( function( data ){
                             self.refresh(data)
@@ -966,17 +972,37 @@
                         <span data-bind="text: property_name" />
                     </td>
                     <td class="td-2" >
-                        <div data-bind="ifnot: textarea">
-                            <input class="input" data-bind="value: value, attr: {size:field_size}" />
-                            <span data-bind="if: ad_hoc">
-                                <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
-                        </span>
-                        </div>
-                        <div  data-bind="if: textarea">
-                            <textarea class="input_textarea" data-bind="value: value, attr: {rows: format.rows}"><span data-bind="value: value"></span></textarea>
-                            <span data-bind="if: ad_hoc">
-                                <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
-                            </span>
+                        <div data-bind="switch: type">
+                            <div data-bind="case: 'string'">
+                                <input class="input" data-bind="value: value, attr: {size:field_size}" />
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                            <div data-bind="case: 'number'">
+                                <input type="number" class="input" data-bind="value: value, attr: {size:field_size}" />
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                            <div data-bind="case: 'date'">
+                                <input type="date" size=12 class="input" data-bind="value: value" />
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                            <div  data-bind="case: 'textarea'">
+                                <textarea class="input_textarea" data-bind="value: value, attr: {rows: format.rows}"><span data-bind="value: value"></span></textarea>
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
+                            <div data-bind="case: $default">
+                                <input class="input" data-bind="value: value, attr: {size:field_size}" />
+                                <span data-bind="if: ad_hoc">
+                                    <button data-bind="click: $parent.delete_ad_hoc, attr: {id: property_name}">-</button>
+                                </span>
+                            </div>
                         </div>
                     </td>
                 </tr>

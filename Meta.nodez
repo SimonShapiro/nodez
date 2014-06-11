@@ -1,0 +1,1 @@
+create (n:Meta    { name : "Meta" , schema : '{ "name" : { "type": "string" }, "schema" : { "type": "textarea", "format": "textarea" }}'});

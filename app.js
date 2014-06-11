@@ -12,13 +12,14 @@ var express = require('express')
   , test = require('./routes/test')
   , schema = require('./routes/schema')
   , neo=require('./routes/neo')
+  , yedcsv=require('./routes/yedcsv')
   , http = require('http')
   , path = require('path');
   
 var app = express();
 
 // all environments
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 7000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -48,12 +49,12 @@ console.log(app.stack)
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
-
+/*
 DBROUTE='http://localhost:5984/'
 //DBROUTE='http://simons.iriscouch.com/'
-
+*/
 app.get('/', routes.index);
-
+/*
 app.get('/users', user.list);
 
 app.get('/couch/:docbase/:doc', couch.getDoc) // R
@@ -76,7 +77,7 @@ app.get('/rule/analyse/:id', rules.analyseRule)
 app.get('/rule/newBasedOnWhenItem/:item/:operator/:value', rules.newRuleBasedOnWhenItem)
 
 app.post('/schema/example', schema.generateExample);
-
+*/
 app.del('/neo4j/node/:id', neo.deleteNodeById);
 app.post('/neo4j/node', neo.postNodeWithLabel );
 app.get( '/neo4j/node/:id/verbose', neo.getNodeById );
@@ -88,6 +89,8 @@ app.get( '/neo4j/nodes/label/:label', neo.getNodesByLabel );
 app.post( '/neo4j/node/:id/relationship', neo.saveRelationship );
 app.del( '/neo4j/relationship/:id', neo.deleteRelationship );
 app.get( '/neo4j/relationship/:id', neo.getRelationship );
+
+app.get( '/neo4j/yedcsv/path/:path', yedcsv.getCsvByPath);
 
 //app.get('/test', test.index)
 //app.get('/rules/:matchingTarget', rules.listAll)

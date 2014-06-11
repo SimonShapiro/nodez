@@ -7,37 +7,37 @@ meta=[
     {name:"Meta",
       schema: {
         name: { type: "string" },
-        schema: { type: "string", format: "textarea" }
+        schema: { type: "textarea", format: "textarea" }
       }},
     {name:"BusinessProcess",
       schema:{
         name:{type:"string"},
-        description:{type:"string", format:"textarea"}
+        description:{type:"textarea", format:"textarea"}
       }},
     {name:"BusinessInformationObject",
       schema:{
         name:{type:"string"},
-        description:{type:"string", format:"textarea"}
+        description:{type:"textarea", format:"textarea"}
       }},
     {name:"Cluster",
       schema:{
         name:{type:"string"},
-        description:{type:"string", format:"textarea"}
+        description:{type:"textarea", format:"textarea"}
       }},
     {name:"Application",
       schema:{
         name:{type:"string"},
         version:{type:"string"},
-        description:{type:"string", format:"textarea"},
-        dateAcquired:{type:"string", format:"date"},
-        yearsOwned:{type:"string", format: "number"}
+        description:{type:"textarea", format:"textarea"},
+        dateAcquired:{type:"date", format:"date"},
+        yearsOwned:{type:"number", format: "number"}
       }}
 ];
 legalRels=[
     {from:"BusinessProcess",rel:"HAS_PARTS",to:"BusinessProcess",template:"{}"},
     {from:"Cluster",rel:"HAS_PARTS",to:"Cluster",template:"{}"},
     {from:"BusinessProcess",rel:"RELIES_ON",to:"Application",template:"{}"},
-    {from:"BusinessProcess",rel:"NEXT",to:"BusinessProcess",template:"{}"},
+    {from:"BusinessProcess",rel:"THEN",to:"BusinessProcess",template:"{}"},
     {from:"Cluster",rel:"IS_ACCOUNTABLE_FOR",to:"BusinessProcess",template:"{}"},
     {from:"BusinessProcess",rel:"PRODUCES",to:"BusinessInformationObject",template:"{}"},
     {from:"Cluster",rel:"USES",to:"Application",template:"{}"},
