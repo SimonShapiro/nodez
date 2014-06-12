@@ -184,6 +184,7 @@
                     }
                 }, "change");
                 self.respondTo_GetNodeViaMockSelect = amplify.subscribe("getNodeViaMockSelect", function(data) {
+                    alert('In mock select' + JSON.stringify(data))
                     self.selectedNode(data);
                 });
 
@@ -199,16 +200,24 @@
 //                    amplify.publish("nodeListReady")
                 };
                 self.respondToDeleteNode = amplify.subscribe( "deleteNodeResponse", function( msg ) {
-                   if (msg.header.statusCode == 200 ) {
-                       getNodesByLabel( self.observableName(), self.refresh );
+                    var
+                            getNodeList;
+                   if (msg.header.statusCode == 200 ) {   // todo clear up dependency injection
+                       getNodeList = getNodesByLabel(metaViewModel.selectedMetaNode().name );
+                       getNodeList.done( function(data ){
+                           self.refresh( data );
+                       })
                    }
                 });
                 self.respondToSaveNodeResponse = amplify.subscribe( "saveNodeResponse", function( msg ) {
                     var
-                        n;
+                            n,      getNodeList;
 
-                    if (msg.header.statusCode == 201 ) {
-                        getNodesByLabel( self.observableName(), self.refresh );
+                    if (msg.header.statusCode == 201 ) {  // todo clear up dependency injection
+                        getNodeList = getNodesByLabel(metaViewModel.selectedMetaNode().name );
+                        getNodeList.done( function(data ){
+                            self.refresh( data );
+                        })
                     }
                     else {
                         n = $.inArray(self.selectedNode(),self.observableArrayList());
