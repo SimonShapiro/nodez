@@ -7,6 +7,33 @@
     <script type='text/javascript' src='/javascripts/knockout/knockout-3.1.0.js'></script>
     <script type='text/javascript' src='/javascripts/knockout/knockout-switch-case.js'></script>
     <script type='text/javascript' src='/javascripts/amplify/amplify.min.js'></script>
+    <script type="text/javascript">
+        // Fixes the data global for ie8
+        if ( !Date.prototype.toISOString ) {
+            ( function() {
+
+                function pad(number) {
+                    var r = String(number);
+                    if ( r.length === 1 ) {
+                        r = '0' + r;
+                    }
+                    return r;
+                }
+
+                Date.prototype.toISOString = function() {
+                    return this.getUTCFullYear()
+                            + '-' + pad( this.getUTCMonth() + 1 )
+                            + '-' + pad( this.getUTCDate() )
+                            + 'T' + pad( this.getUTCHours() )
+                            + ':' + pad( this.getUTCMinutes() )
+                            + ':' + pad( this.getUTCSeconds() )
+                            + '.' + String( (this.getUTCMilliseconds()/1000).toFixed(3) ).slice( 2, 5 )
+                            + 'Z';
+                };
+
+            }() );
+        }
+    </script>
     <script type='text/javascript'>
 
         var spa = (function ($) {
