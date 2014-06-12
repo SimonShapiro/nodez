@@ -275,8 +275,8 @@ exports.getCsvByPath = function(req, res){
           }
           nodeDsv.push( dsvString );
         }
-        console.log( JSON.stringify(edgeDsv ));
-        console.log( JSON.stringify(nodeDsv ));
+        console.log( JSON.stringify( edgeDsv ));
+        console.log( JSON.stringify( nodeDsv ));
 /*
         csvFile = require('fs');
         fileName = "csvstore/" + (new Date().toISOString().replace(/:/g,"-")) + ".csv";

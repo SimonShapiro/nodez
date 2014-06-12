@@ -84,7 +84,7 @@ app.get( '/neo4j/node/:id/verbose', neo.getNodeById );
 app.put( '/neo4j/node/:id', neo.putNodeById );
 app.get( '/neo4j/node/:id/navigate', neo.getNodeByIdWithNavigation );
 app.get( '/neo4j', neo.serviceRoot );
-app.get( '/neo4j/nodes/label/:label', neo.getNodesByLabel );
+app.post( '/neo4j/nodes/label/:label', neo.getNodesByLabel );
 
 app.post( '/neo4j/node/:id/relationship', neo.saveRelationship );
 app.del( '/neo4j/relationship/:id', neo.deleteRelationship );

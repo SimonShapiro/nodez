@@ -854,7 +854,7 @@
 
                 ajax_request = $.ajax({
                     url: '/neo4j/nodes/label/' + node_label,
-                    type: 'get',
+                    type: 'post',
                     headers: {Accept: 'application/json'}})
                 return ajax_request.promise();
             };

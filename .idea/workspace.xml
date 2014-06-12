@@ -2,19 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="36ae2b24-1c78-4dd9-b1b4-c0cca550ab4e" name="Default" comment="init&#10;">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Meta.nodez" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/kernel.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/public/javascripts/knockout/knockout-switch-case.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/package.conf" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/routes/yedcsv.js" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/xxx" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app.js" afterPath="$PROJECT_DIR$/app.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/knock.html" afterPath="$PROJECT_DIR$/public/knock.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/loadMetaNodez.js" afterPath="$PROJECT_DIR$/loadMetaNodez.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/routes/neo.js" afterPath="$PROJECT_DIR$/routes/neo.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/node_modules/nodez/nodezv3.js" afterPath="$PROJECT_DIR$/node_modules/nodez/nodezv3.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/package.conf" afterPath="$PROJECT_DIR$/package.conf" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/routes/yedcsv.js" afterPath="$PROJECT_DIR$/routes/yedcsv.js" />
     </list>
     <list id="a5de1726-c557-4bf1-a9a7-5a9368610225" name="Balance of Aplha v0" comment="" />
     <ignored path="package.iws" />
@@ -41,16 +33,7 @@
       <file leaf-file-name="neo.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/routes/neo.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="128" column="13" selection-start="3932" selection-end="3936" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="9510">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="couch.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/routes/couch.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="47" column="0" selection-start="1149" selection-end="1239" vertical-scroll-proportion="0.0" vertical-offset="705" max-vertical-offset="1815">
+            <state line="335" column="29" selection-start="11566" selection-end="11566" vertical-scroll-proportion="-193.26923" vertical-offset="0" max-vertical-offset="9510">
               <folding />
             </state>
           </provider>
@@ -59,7 +42,7 @@
       <file leaf-file-name="app.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="32" selection-start="99" selection-end="99" vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="1590">
+            <state line="21" column="37" selection-start="536" selection-end="536" vertical-scroll-proportion="0.0" vertical-offset="1116" max-vertical-offset="1590">
               <folding />
             </state>
           </provider>
@@ -68,7 +51,7 @@
       <file leaf-file-name="yedcsv.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/routes/yedcsv.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="13" column="0" selection-start="243" selection-end="243" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4590">
+            <state line="277" column="37" selection-start="9237" selection-end="9237" vertical-scroll-proportion="0.0" vertical-offset="4020" max-vertical-offset="4590">
               <folding />
             </state>
           </provider>
@@ -77,7 +60,7 @@
       <file leaf-file-name="package.conf" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.conf">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="4" column="1" selection-start="111" selection-end="111" vertical-scroll-proportion="-2.5" vertical-offset="0" max-vertical-offset="150">
+            <state line="2" column="13" selection-start="56" selection-end="56" vertical-scroll-proportion="-1.25" vertical-offset="0" max-vertical-offset="150">
               <folding />
             </state>
           </provider>
@@ -113,16 +96,7 @@
       <file leaf-file-name="knock.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/public/knock.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="905" column="2" selection-start="46614" selection-end="46614" vertical-scroll-proportion="0.13761468" vertical-offset="13515" max-vertical-offset="17010">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="nodebrowser.html" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/public/nodebrowser.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="560.625" vertical-offset="13455" max-vertical-offset="17010">
+            <state line="888" column="43" selection-start="45406" selection-end="45406" vertical-scroll-proportion="-0.42335767" vertical-offset="13494" max-vertical-offset="17550">
               <folding />
             </state>
           </provider>
@@ -137,6 +111,11 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
@@ -176,10 +155,10 @@
         <option value="$PROJECT_DIR$/node_modules/nodez/nodezv3.js" />
         <option value="$PROJECT_DIR$/routes/package.conf" />
         <option value="$PROJECT_DIR$/routes/neo.js" />
-        <option value="$PROJECT_DIR$/routes/yedcsv.js" />
         <option value="$PROJECT_DIR$/public/knock.html" />
         <option value="$PROJECT_DIR$/app.js" />
         <option value="$PROJECT_DIR$/package.conf" />
+        <option value="$PROJECT_DIR$/routes/yedcsv.js" />
       </list>
     </option>
   </component>
@@ -228,7 +207,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="package" />
+              <option name="myItemId" value="nodez-git" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -238,7 +217,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="package" />
+              <option name="myItemId" value="nodez-git" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -288,7 +267,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$USER_HOME$/WebstormProjects/test" />
+      <recent name="$PROJECT_DIR$/../test" />
       <recent name="$PROJECT_DIR$/public/javascripts/knockout" />
       <recent name="$PROJECT_DIR$/public/javascripts/jQuery-copy" />
       <recent name="$PROJECT_DIR$/public/javascripts/amplify" />
@@ -302,6 +281,38 @@
   <component name="RestClientSettings">
     <option name="REQUEST_HISTORY">
       <list>
+        <RestClientRequest>
+          <option name="httpMethod" value="GET" />
+          <option name="urlBase" value="http://localhost:7000" />
+          <option name="urlPath" value="/neo4j/nodes/label/BusinessInformationObject" />
+          <option name="headers">
+            <list>
+              <KeyValuePair>
+                <option name="key" value="content-type" />
+                <option name="value" value="application/json" />
+              </KeyValuePair>
+              <KeyValuePair>
+                <option name="key" value="Cache-Control" />
+                <option name="value" value="no-cache" />
+              </KeyValuePair>
+              <KeyValuePair>
+                <option name="key" value="accept" />
+                <option name="value" value="application/json" />
+              </KeyValuePair>
+            </list>
+          </option>
+          <option name="parameters">
+            <list>
+              <KeyValuePair>
+                <option name="key" value="" />
+                <option name="value" value="" />
+              </KeyValuePair>
+            </list>
+          </option>
+          <option name="parametersEnabled" value="true" />
+          <option name="textToSend" value="" />
+          <option name="filesToSend" value="" />
+        </RestClientRequest>
         <RestClientRequest>
           <option name="httpMethod" value="GET" />
           <option name="urlBase" value="http://localhost:3001" />
@@ -1889,38 +1900,10 @@
           <option name="textToSend" value="&quot;Cluster&quot;" />
           <option name="filesToSend" value="" />
         </RestClientRequest>
-        <RestClientRequest>
-          <option name="httpMethod" value="GET" />
-          <option name="urlBase" value="http://localhost:3000" />
-          <option name="urlPath" value="neo4j/node/7036/navigate" />
-          <option name="headers">
-            <list>
-              <KeyValuePair>
-                <option name="key" value="content-type" />
-                <option name="value" value="application/json" />
-              </KeyValuePair>
-              <KeyValuePair>
-                <option name="key" value="Cache-Control" />
-                <option name="value" value="no-cache" />
-              </KeyValuePair>
-            </list>
-          </option>
-          <option name="parameters">
-            <list>
-              <KeyValuePair>
-                <option name="key" value="" />
-                <option name="value" value="" />
-              </KeyValuePair>
-            </list>
-          </option>
-          <option name="parametersEnabled" value="true" />
-          <option name="textToSend" value="&quot;Cluster&quot;" />
-          <option name="filesToSend" value="" />
-        </RestClientRequest>
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="JavaScript Debug.nodebrowser.html">
+  <component name="RunManager" selected="JavaScript Debug.knock">
     <configuration default="false" name="spa-1.2.5.html" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true" temporary="true" engineId="firefox" uri="http://localhost:63342/package/public/spa-1.2.5.html">
       <RunnerSettings RunnerId="JavascriptDebugRunner" />
       <ConfigurationWrapper RunnerId="JavascriptDebugRunner" />
@@ -1941,6 +1924,14 @@
       <ConfigurationWrapper RunnerId="JavascriptDebugRunner" />
       <method />
     </configuration>
+    <configuration default="true" type="DartUnitRunConfigurationType" factoryName="DartUnit">
+      <option name="VMOptions" />
+      <option name="arguments" />
+      <option name="filePath" />
+      <option name="scope" value="ALL" />
+      <option name="testName" />
+      <method />
+    </configuration>
     <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
       <option name="VMOptions" />
       <option name="arguments" />
@@ -1951,23 +1942,15 @@
       <option name="showConsoleOnStdOut" value="false" />
       <method />
     </configuration>
-    <configuration default="true" type="DartUnitRunConfigurationType" factoryName="DartUnit">
-      <option name="VMOptions" />
-      <option name="arguments" />
-      <option name="filePath" />
-      <option name="scope" value="ALL" />
-      <option name="testName" />
-      <method />
-    </configuration>
-    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma" singleton="true" config-file="">
-      <envs />
-      <method />
-    </configuration>
     <configuration default="true" type="JSTestDriver:ConfigurationType" factoryName="JsTestDriver">
       <setting name="configLocationType" value="CONFIG_FILE" />
       <setting name="settingsFile" value="" />
       <setting name="serverType" value="INTERNAL" />
       <setting name="preferredDebugBrowser" value="CHROME" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerKarma" factoryName="Karma" singleton="true" config-file="">
+      <envs />
       <method />
     </configuration>
     <configuration default="true" type="NodeJSRemoteDebug" factoryName="Node.js Remote Debug">
@@ -2030,13 +2013,13 @@
       <item index="1" class="java.lang.String" itemvalue="JavaScript Debug.hello" />
       <item index="2" class="java.lang.String" itemvalue="JavaScript Debug.hellomoustache" />
       <item index="3" class="java.lang.String" itemvalue="JavaScript Debug.knock" />
-      <item index="4" class="java.lang.String" itemvalue="JavaScript Debug.spa-1.2.5.html" />
-      <item index="5" class="java.lang.String" itemvalue="JavaScript Debug.spaTest.js.html" />
-      <item index="6" class="java.lang.String" itemvalue="JavaScript Debug.deferred.html" />
-      <item index="7" class="java.lang.String" itemvalue="JavaScript Debug.nodebrowser.html" />
-      <item index="8" class="java.lang.String" itemvalue="Node.js.App" />
-      <item index="9" class="java.lang.String" itemvalue="Node.js.LoadNetwork" />
-      <item index="10" class="java.lang.String" itemvalue="Node.js.json2neo" />
+      <item index="4" class="java.lang.String" itemvalue="Node.js.App" />
+      <item index="5" class="java.lang.String" itemvalue="Node.js.LoadNetwork" />
+      <item index="6" class="java.lang.String" itemvalue="Node.js.json2neo" />
+      <item index="7" class="java.lang.String" itemvalue="JavaScript Debug.spa-1.2.5.html" />
+      <item index="8" class="java.lang.String" itemvalue="JavaScript Debug.spaTest.js.html" />
+      <item index="9" class="java.lang.String" itemvalue="JavaScript Debug.deferred.html" />
+      <item index="10" class="java.lang.String" itemvalue="JavaScript Debug.nodebrowser.html" />
     </list>
     <recent_temporary>
       <list size="4">
@@ -2112,7 +2095,15 @@
       <created>1400953918703</created>
       <updated>1400953918703</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="removed bug relating to nodes list not updating on delete and save">
+      <created>1402557961864</created>
+      <updated>1402557961864</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Fixes IE8 .toISOdate() function">
+      <created>1402573802224</created>
+      <updated>1402573802224</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TodoView" selected-index="1">
@@ -2139,23 +2130,23 @@
     <frame x="0" y="22" width="1440" height="818" extended-state="6" />
     <editor active="false" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3765348" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32196453" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3287858" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="REST Client" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.8498623" sideWeight="0.49964765" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37603307" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32093665" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3269494" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17829457" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17829457" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.27134988" sideWeight="0.49964765" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37123287" sideWeight="0.5003524" order="8" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.30991736" sideWeight="0.49964765" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3269494" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.30853996" sideWeight="0.49964765" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3264463" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32561308" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32945737" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3287858" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="REST Client" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.8499318" sideWeight="0.49964765" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
@@ -2178,9 +2169,9 @@
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17829457" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3147139" sideWeight="0.49964765" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3147139" sideWeight="0.49964765" order="2" side_tool="false" content_ui="tabs" />
     </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -2206,16 +2197,13 @@
     <MESSAGE value="Node editor complete - now for relationship editor" />
     <MESSAGE value="Mark before inserting moustache engine" />
     <MESSAGE value="Alpha v0&#10;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Alpha v0&#10;" />
+    <MESSAGE value="removed bug relating to nodes list not updating on delete and save" />
+    <MESSAGE value="Fixes IE8 .toISOdate() function" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixes IE8 .toISOdate() function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/public/knock.html</url>
-          <line>908</line>
-          <option name="timeStamp" value="874" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/public/nodebrowser.html</url>
           <line>909</line>
@@ -2225,15 +2213,10 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="876" />
+      <option name="time" value="879" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/Documents/sample.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="200" column="0" selection-start="11492" selection-end="11492" vertical-scroll-proportion="0.6075036" vertical-offset="2579" max-vertical-offset="21690" />
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Documents/simple_bpmn_model.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="193" column="0" selection-start="14357" selection-end="14357" vertical-scroll-proportion="0.0" vertical-offset="1" max-vertical-offset="870" />
@@ -2426,9 +2409,7 @@
     </entry>
     <entry file="file://$USER_HOME$/Desktop/kernel.graphml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="353" column="18" selection-start="26154" selection-end="26154" vertical-scroll-proportion="0.0" vertical-offset="4740" max-vertical-offset="5430">
-          <folding />
-        </state>
+        <state line="353" column="18" selection-start="26154" selection-end="26154" vertical-scroll-proportion="0.0" vertical-offset="4740" max-vertical-offset="5430" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/routes/couch.js">
@@ -2452,9 +2433,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app.js">
+    <entry file="http://localhost:7000/neo4j/relationship/40">
+      <provider selected="true" editor-type-id="httpFileEditor">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="32" selection-start="99" selection-end="99" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1590">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="501">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.project">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="501">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="2" column="13" selection-start="56" selection-end="56" vertical-scroll-proportion="-1.25" vertical-offset="0" max-vertical-offset="150">
           <folding />
         </state>
       </provider>
@@ -2466,42 +2466,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="http://localhost:7000/neo4j/relationship/40">
-      <provider selected="true" editor-type-id="httpFileEditor">
-        <state />
+    <entry file="file://$PROJECT_DIR$/routes/yedcsv.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="277" column="37" selection-start="9237" selection-end="9237" vertical-scroll-proportion="0.0" vertical-offset="4020" max-vertical-offset="4590">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/routes/neo.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="128" column="13" selection-start="3932" selection-end="3936" vertical-scroll-proportion="0.0" vertical-offset="1761" max-vertical-offset="9510">
+        <state line="335" column="29" selection-start="11566" selection-end="11566" vertical-scroll-proportion="-193.26923" vertical-offset="0" max-vertical-offset="9510">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/routes/yedcsv.js">
+    <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="0" selection-start="243" selection-end="243" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="4590">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="1" selection-start="111" selection-end="111" vertical-scroll-proportion="-2.5" vertical-offset="0" max-vertical-offset="150">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/nodebrowser.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="560.625" vertical-offset="13455" max-vertical-offset="17010">
+        <state line="21" column="37" selection-start="536" selection-end="536" vertical-scroll-proportion="0.0" vertical-offset="1116" max-vertical-offset="1590">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/public/knock.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="905" column="2" selection-start="46614" selection-end="46614" vertical-scroll-proportion="0.13761468" vertical-offset="13515" max-vertical-offset="17010">
+        <state line="888" column="43" selection-start="45406" selection-end="45406" vertical-scroll-proportion="-0.42335767" vertical-offset="13494" max-vertical-offset="17550">
           <folding />
         </state>
       </provider>
